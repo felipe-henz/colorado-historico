@@ -653,31 +653,42 @@ const POSTURAS = {
 };
 
 // clubes da Libertadores (históricos e atuais) + força e artilheiros reais
+// adversários separados por época (como os times do Inter)
 const CLUBES = [
-  {nome:"Boca Juniors", pais:"ARG", forca:88, estrelas:["Riquelme","Palermo","Tevez"]},
-  {nome:"River Plate", pais:"ARG", forca:88, estrelas:["Francescoli","Saviola","Borja"]},
-  {nome:"Estudiantes", pais:"ARG", forca:83, estrelas:["Verón","Boselli"]},
-  {nome:"Independiente", pais:"ARG", forca:84, estrelas:["Bochini","Burruchaga"]},
-  {nome:"Racing", pais:"ARG", forca:82, estrelas:["Milito","López"]},
-  {nome:"Vélez Sarsfield", pais:"ARG", forca:82, estrelas:["Bassedas","Tacuara Cardozo"]},
-  {nome:"Peñarol", pais:"URU", forca:84, estrelas:["Morena","Aguirre"]},
-  {nome:"Nacional", pais:"URU", forca:83, estrelas:["Recoba","Suárez"]},
-  {nome:"Olimpia", pais:"PAR", forca:82, estrelas:["Báez","Acuña"]},
-  {nome:"Cerro Porteño", pais:"PAR", forca:79, estrelas:["Benítez"]},
-  {nome:"Colo-Colo", pais:"CHI", forca:83, estrelas:["Zamorano","Barticciotto"]},
-  {nome:"Universidad de Chile", pais:"CHI", forca:81, estrelas:["Salah","Vargas"]},
-  {nome:"LDU Quito", pais:"EQU", forca:82, estrelas:["Bieler","Manso"]},
-  {nome:"Barcelona SC", pais:"EQU", forca:80, estrelas:["Delgado"]},
-  {nome:"Atlético Nacional", pais:"COL", forca:83, estrelas:["Aristizábal","Borja"]},
-  {nome:"Once Caldas", pais:"COL", forca:79, estrelas:["Dinas"]},
-  {nome:"Flamengo", pais:"BRA", forca:89, estrelas:["Zico","Gabigol","Arrascaeta"]},
-  {nome:"Palmeiras", pais:"BRA", forca:88, estrelas:["Edmundo","Dudu","Endrick"]},
-  {nome:"São Paulo", pais:"BRA", forca:87, estrelas:["Raí","Rogério Ceni","Luís Fabiano"]},
-  {nome:"Santos", pais:"BRA", forca:87, estrelas:["Pelé","Neymar","Robinho"]},
-  {nome:"Grêmio", pais:"BRA", forca:85, estrelas:["Renato Gaúcho","Ronaldinho"]},
-  {nome:"Corinthians", pais:"BRA", forca:84, estrelas:["Marcelinho","Paulinho"]},
-  {nome:"Atlético-MG", pais:"BRA", forca:85, estrelas:["Ronaldinho","Hulk"]},
-  {nome:"Cruzeiro", pais:"BRA", forca:84, estrelas:["Sorín","Fred"]},
+  // BRASIL
+  {nome:"Santos 1962", pais:"BRA", forca:92, estrelas:["Pelé","Coutinho","Pepe","Zito"]},
+  {nome:"Flamengo 1981", pais:"BRA", forca:90, estrelas:["Zico","Júnior","Nunes","Adílio"]},
+  {nome:"São Paulo 1993", pais:"BRA", forca:89, estrelas:["Raí","Cafu","Müller","Palhinha"]},
+  {nome:"Flamengo 2019", pais:"BRA", forca:89, estrelas:["Gabigol","Arrascaeta","Bruno Henrique"]},
+  {nome:"Grêmio 1983", pais:"BRA", forca:86, estrelas:["Renato Gaúcho","De León","Tarciso"]},
+  {nome:"Palmeiras 1999", pais:"BRA", forca:86, estrelas:["Marcos","Alex","Roque Júnior"]},
+  {nome:"Palmeiras 2021", pais:"BRA", forca:87, estrelas:["Dudu","Raphael Veiga","Rony"]},
+  {nome:"São Paulo 2005", pais:"BRA", forca:87, estrelas:["Rogério Ceni","Luís Fabiano","Amoroso"]},
+  {nome:"Santos 2011", pais:"BRA", forca:86, estrelas:["Neymar","Ganso","Borges"]},
+  {nome:"Corinthians 2012", pais:"BRA", forca:85, estrelas:["Guerrero","Paulinho","Cássio"]},
+  {nome:"Atlético-MG 2013", pais:"BRA", forca:85, estrelas:["Ronaldinho","Jô","Bernard"]},
+  {nome:"Grêmio 2017", pais:"BRA", forca:84, estrelas:["Luan","Geromel","Ramiro"]},
+  {nome:"Cruzeiro 1997", pais:"BRA", forca:84, estrelas:["Dida","Sorín","Marcelo Ramos"]},
+  // ARGENTINA
+  {nome:"Boca Juniors 2001", pais:"ARG", forca:88, estrelas:["Riquelme","Palermo","Bermúdez"]},
+  {nome:"Boca Juniors 2007", pais:"ARG", forca:87, estrelas:["Riquelme","Palacio","Battaglia"]},
+  {nome:"River Plate 2018", pais:"ARG", forca:87, estrelas:["Quintero","Pratto","Borré"]},
+  {nome:"River Plate 1986", pais:"ARG", forca:86, estrelas:["Alonso","Funes","Gallego"]},
+  {nome:"Independiente 1984", pais:"ARG", forca:86, estrelas:["Bochini","Burruchaga"]},
+  {nome:"Estudiantes 2009", pais:"ARG", forca:84, estrelas:["Verón","Boselli"]},
+  {nome:"Vélez Sarsfield 1994", pais:"ARG", forca:84, estrelas:["Chilavert","Bassedas","Trotta"]},
+  // URUGUAI
+  {nome:"Peñarol 1966", pais:"URU", forca:87, estrelas:["Spencer","Rocha","Sasía"]},
+  {nome:"Nacional 1988", pais:"URU", forca:84, estrelas:["Ostolaza","De León"]},
+  // PARAGUAI
+  {nome:"Olimpia 2002", pais:"PAR", forca:83, estrelas:["Báez","Samaniego"]},
+  // CHILE
+  {nome:"Colo-Colo 1991", pais:"CHI", forca:83, estrelas:["Barticciotto","Rubén Martínez"]},
+  // COLÔMBIA
+  {nome:"Atlético Nacional 1989", pais:"COL", forca:83, estrelas:["Higuita","Usuriaga"]},
+  {nome:"Once Caldas 2004", pais:"COL", forca:80, estrelas:["Dinas","Henao"]},
+  // EQUADOR
+  {nome:"LDU Quito 2008", pais:"EQU", forca:82, estrelas:["Bieler","Manso","Urrutia"]},
 ];
 const FASES = [
   {tipo:"grupo", nome:"Fase de Grupos — 1ª rodada"},
