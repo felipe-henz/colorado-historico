@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Colorado Histórico — Monte o Inter dos sonhos</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
   :root{
     --vermelho:#C8102E;
@@ -167,6 +168,10 @@
     border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);user-select:none}
   .vel.sel{background:var(--vermelho);border-color:var(--vermelho);font-weight:700}
   .final-msg{text-align:center;padding:24px;font-size:1.4rem;font-weight:700}
+  #card-capturavel{padding:10px;border-radius:16px;
+    background:radial-gradient(circle at 50% 0%, #2a0810, #14060a 70%)}
+  .card-marca{text-align:center;font-weight:800;letter-spacing:1px;
+    color:var(--vermelho-claro);font-size:1rem;margin:4px 0 8px}
   /* ficha final estilo card */
   .ficha{background:linear-gradient(160deg,rgba(200,16,46,.18),rgba(0,0,0,.3));
     border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:18px;margin-top:8px}
@@ -278,19 +283,23 @@
 
   <!-- TELA 5: RESUMO DA CAMPANHA -->
   <section id="tela-campanha" class="card hide">
-    <div class="final-msg" id="final-msg"></div>
-    <div class="ficha">
-      <div class="ficha-topo">
-        <div class="ficha-over"><span id="ficha-over-num">0</span><small>OVERALL</small></div>
-        <div class="ficha-tatica"><b id="ficha-form"></b><span id="ficha-post"></span></div>
+    <div id="card-capturavel">
+      <div class="card-marca">COLORADO HISTÓRICO 🔴⚪</div>
+      <div class="final-msg" id="final-msg"></div>
+      <div class="ficha">
+        <div class="ficha-topo">
+          <div class="ficha-over"><span id="ficha-over-num">0</span><small>OVERALL</small></div>
+          <div class="ficha-tatica"><b id="ficha-form"></b><span id="ficha-post"></span></div>
+        </div>
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="ficha-titulo">⚽ Elenco</div>
+        <div class="elenco-grid" id="elenco-grid"></div>
+        <div class="ficha-titulo">📋 Resultados</div>
+        <div id="lista-partidas"></div>
       </div>
-      <div class="stats-grid" id="stats-grid"></div>
-      <div class="ficha-titulo">⚽ Elenco</div>
-      <div class="elenco-grid" id="elenco-grid"></div>
-      <div class="ficha-titulo">📋 Resultados</div>
-      <div id="lista-partidas"></div>
     </div>
-    <button class="btn" id="btn-novo">Jogar novamente</button>
+    <button class="btn" id="btn-compartilhar">📸 Salvar / Compartilhar card</button>
+    <button class="btn sec" id="btn-novo">Jogar novamente</button>
   </section>
 
   <footer>Fan game não-oficial • Dados de exemplo — edite o array TIMES no código</footer>
@@ -1197,6 +1206,29 @@ function finalizarCampanha(){
 function pararSim(){ if(estado.sim&&estado.sim.timer) clearInterval(estado.sim.timer); }
 $("#btn-reset").onclick=()=>{ pararSim(); mostrar("tela-config"); };
 $("#btn-novo").onclick=()=>{ pararSim(); mostrar("tela-config"); };
+
+/* ---------- COMPARTILHAR CARD ---------- */
+$("#btn-compartilhar").onclick=async()=>{
+  const bt=$("#btn-compartilhar");
+  if(typeof html2canvas==="undefined"){ alert("Sem internet para gerar a imagem."); return; }
+  const txtOrig=bt.textContent; bt.textContent="Gerando imagem..."; bt.disabled=true;
+  try{
+    const canvas=await html2canvas($("#card-capturavel"),{backgroundColor:"#14060a",scale:2});
+    const blob=await new Promise(r=>canvas.toBlob(r,"image/png"));
+    const arquivo=new File([blob],"colorado-historico.png",{type:"image/png"});
+    // tenta compartilhar (celular); senão baixa
+    if(navigator.canShare && navigator.canShare({files:[arquivo]})){
+      await navigator.share({files:[arquivo], title:"Colorado Histórico",
+        text:"Meu elenco no Colorado Histórico! 🔴⚪"});
+    }else{
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url; a.download="colorado-historico.png"; a.click();
+      URL.revokeObjectURL(url);
+    }
+  }catch(e){ alert("Não foi possível gerar a imagem."); }
+  bt.textContent=txtOrig; bt.disabled=false;
+};
 
 /* INIT */
 initConfig();
