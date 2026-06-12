@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Colorado Histórico — Monte o Inter dos sonhos</title>
+<style>
+  :root{
+    --vermelho:#C8102E;
+    --vermelho-esc:#8E0B20;
+    --vermelho-claro:#E5394E;
+    --branco:#ffffff;
+    --escuro:#14060a;
+    --cinza:#2a1116;
+    --dourado:#F2C14E;
+    --verde:#2ecc71;
+    --txt:#fbeef0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif}
+  body{
+    background:radial-gradient(circle at 50% -10%, #3a0a14 0%, #14060a 55%, #0a0407 100%);
+    color:var(--txt);min-height:100vh;padding:20px;
+  }
+  .wrap{max-width:920px;margin:0 auto}
+  header.topo{text-align:center;padding:18px 0 8px}
+  header.topo h1{
+    font-size:2.4rem;letter-spacing:1px;
+    text-shadow:0 2px 0 var(--vermelho-esc);
+  }
+  header.topo h1 b{color:var(--vermelho)}
+  header.topo p{opacity:.7;font-size:.95rem;margin-top:4px}
+  .card{
+    background:linear-gradient(160deg, rgba(200,16,46,.12), rgba(0,0,0,.25));
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:18px;padding:22px;margin-top:18px;
+    box-shadow:0 18px 40px rgba(0,0,0,.4);
+  }
+  h2{font-size:1.3rem;margin-bottom:12px;color:var(--dourado)}
+  .label{font-size:.8rem;text-transform:uppercase;letter-spacing:1px;opacity:.65;margin:14px 0 6px}
+  .opcoes{display:flex;flex-wrap:wrap;gap:10px}
+  .chip{
+    padding:10px 16px;border-radius:30px;cursor:pointer;
+    border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);
+    transition:.15s;font-size:.95rem;user-select:none;
+  }
+  .chip:hover{border-color:var(--vermelho)}
+  .chip.sel{background:var(--vermelho);border-color:var(--vermelho);color:#fff;font-weight:600}
+  button.btn{
+    margin-top:20px;width:100%;padding:15px;border:none;border-radius:14px;
+    background:linear-gradient(180deg,var(--vermelho),var(--vermelho-esc));
+    color:#fff;font-size:1.1rem;font-weight:700;cursor:pointer;letter-spacing:.5px;
+    transition:.15s;
+  }
+  button.btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+  button.btn.sec{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18)}
+
+  /* Campo / escalação */
+  .campo{
+    background:
+      repeating-linear-gradient(0deg,#1d7a3e 0 40px,#1a6e38 40px 80px);
+    border:3px solid rgba(255,255,255,.25);border-radius:14px;
+    position:relative;aspect-ratio:7/10;max-width:420px;margin:0 auto;
+    padding:10px;
+  }
+  .slot{
+    position:absolute;transform:translate(-50%,-50%);
+    width:74px;text-align:center;
+  }
+  .slot .bola{
+    width:46px;height:46px;border-radius:50%;margin:0 auto;
+    display:flex;align-items:center;justify-content:center;font-weight:700;
+    border:2px solid #fff;background:rgba(0,0,0,.35);font-size:.7rem;
+  }
+  .slot.vazio .bola{border-style:dashed;opacity:.6}
+  .slot.cheio .bola{background:var(--vermelho);box-shadow:0 0 12px rgba(200,16,46,.8)}
+  .slot .nm{font-size:.62rem;margin-top:3px;line-height:1.1;
+    background:rgba(0,0,0,.55);border-radius:5px;padding:2px 3px}
+  .slot .pos{font-size:.55rem;opacity:.7}
+  /* draft: slots clicáveis */
+  .slot.alvo .bola, .slot.fora .bola{cursor:pointer;border-style:dashed}
+  .slot.alvo .bola{
+    border-color:var(--verde);color:var(--verde);
+    box-shadow:0 0 14px rgba(46,204,113,.7);animation:pulsa 1.1s infinite;
+  }
+  .slot.fora .bola{
+    border-color:var(--dourado);color:var(--dourado);
+    box-shadow:0 0 10px rgba(242,193,78,.5);
+  }
+  .slot.alvo:hover .bola, .slot.fora:hover .bola{transform:scale(1.12);background:rgba(255,255,255,.15)}
+  .slot.ocupado .bola{opacity:.85}
+  .slot.ocupado{pointer-events:none}
+  .slot.movivel .bola{cursor:pointer}
+  .slot.movivel:hover .bola{transform:scale(1.1);box-shadow:0 0 12px rgba(255,255,255,.45)}
+  .slot.origem .bola{border-color:#fff;box-shadow:0 0 14px rgba(255,255,255,.8)}
+  .slot.indispo{pointer-events:none}
+  .slot.indispo .bola{opacity:.28}
+  .slot.indispo .nm{opacity:.3}
+  .slot.swap .bola{
+    cursor:pointer;border-color:var(--dourado);color:var(--dourado);
+    box-shadow:0 0 12px rgba(242,193,78,.7);animation:pulsa-d 1.1s infinite;
+  }
+  .slot.swap:hover .bola{transform:scale(1.12)}
+  @keyframes pulsa-d{0%,100%{box-shadow:0 0 8px rgba(242,193,78,.5)}50%{box-shadow:0 0 18px rgba(242,193,78,.95)}}
+  .btn.sec:disabled{opacity:.35;cursor:not-allowed;transform:none}
+  @keyframes pulsa{0%,100%{box-shadow:0 0 8px rgba(46,204,113,.5)}50%{box-shadow:0 0 18px rgba(46,204,113,.95)}}
+
+  /* Sorteio */
+  .sorteio-time{
+    text-align:center;font-size:1.4rem;color:var(--dourado);font-weight:700;
+    margin:6px 0 2px;
+  }
+  .sorteio-ano{text-align:center;opacity:.7;margin-bottom:14px}
+  .jogadores{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .jog{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:12px 14px;border-radius:12px;cursor:pointer;
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+    transition:.15s;
+  }
+  .jog:hover{border-color:var(--vermelho);background:rgba(200,16,46,.18)}
+  .jog.off{opacity:.32;cursor:not-allowed}
+  .jog.off:hover{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+  .jog .info b{display:block}
+  .jog .info span{font-size:.75rem;opacity:.7}
+  .jog .forca{
+    font-weight:800;font-size:1.1rem;min-width:34px;text-align:center;
+    color:var(--dourado);
+  }
+  .barra-prog{height:8px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden;margin:6px 0 16px}
+  .barra-prog i{display:block;height:100%;background:var(--vermelho);transition:.3s}
+
+  /* Resultado partidas */
+  .partida{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:14px;border-radius:12px;margin-top:10px;
+    background:rgba(255,255,255,.05);border-left:4px solid #666;
+  }
+  .partida.win{border-left-color:var(--verde)}
+  .partida.lose{border-left-color:var(--vermelho)}
+  .partida .fase{font-size:.7rem;opacity:.6;text-transform:uppercase}
+  .partida .placar{font-size:1.5rem;font-weight:800}
+  .partida .adv{text-align:right}
+  /* partida ao vivo */
+  .jogo-fase{text-align:center;text-transform:uppercase;letter-spacing:1px;
+    font-size:.8rem;color:var(--dourado);margin-bottom:14px}
+  .placar-wrap{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .placar-wrap .lado{flex:1;text-align:center}
+  .placar-wrap .time-nome{font-weight:700;font-size:1rem;line-height:1.2}
+  .placar-wrap .time-forca{font-size:.75rem;opacity:.6;margin-top:3px}
+  .placar-grande{font-size:2.6rem;font-weight:800;display:flex;align-items:center;gap:10px}
+  .placar-grande i{font-size:1.2rem;opacity:.5;font-style:normal}
+  .placar-grande span{min-width:38px;text-align:center}
+  .relogio-wrap{margin:16px 0 6px}
+  .relogio{text-align:center;font-size:1.1rem;font-weight:700;color:var(--verde)}
+  .barra-tempo{height:6px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden;margin-top:6px}
+  .barra-tempo i{display:block;height:100%;background:linear-gradient(90deg,var(--verde),var(--dourado));transition:.1s linear}
+  .eventos{min-height:120px;max-height:200px;overflow-y:auto;margin:14px 0;
+    display:flex;flex-direction:column;gap:6px}
+  .ev{padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.05);
+    font-size:.9rem;display:flex;gap:8px;align-items:center;animation:surge .3s}
+  .ev.gol-meu{border-left:3px solid var(--verde)}
+  .ev.gol-adv{border-left:3px solid var(--vermelho)}
+  .ev .min{font-weight:700;opacity:.7;min-width:34px}
+  @keyframes surge{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+  .velocidades{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .vel{padding:9px 14px;border-radius:10px;cursor:pointer;font-size:.85rem;
+    border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);user-select:none}
+  .vel.sel{background:var(--vermelho);border-color:var(--vermelho);font-weight:700}
+  .final-msg{text-align:center;padding:24px;font-size:1.4rem;font-weight:700}
+  /* ficha final estilo card */
+  .ficha{background:linear-gradient(160deg,rgba(200,16,46,.18),rgba(0,0,0,.3));
+    border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:18px;margin-top:8px}
+  .ficha-topo{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+  .ficha-over{display:flex;flex-direction:column;align-items:center;
+    background:var(--vermelho);border-radius:14px;padding:10px 18px;box-shadow:0 6px 18px rgba(200,16,46,.4)}
+  .ficha-over span{font-size:2.4rem;font-weight:800;line-height:1}
+  .ficha-over small{font-size:.6rem;letter-spacing:2px;opacity:.85}
+  .ficha-tatica{text-align:right}
+  .ficha-tatica b{font-size:1.5rem;color:var(--dourado);display:block}
+  .ficha-tatica span{font-size:.8rem;opacity:.7}
+  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+  .stat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+    border-radius:10px;padding:10px;text-align:center}
+  .stat b{display:block;font-size:1.5rem;font-weight:800}
+  .stat span{font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;opacity:.6}
+  .stat.v b{color:var(--verde)} .stat.d b{color:var(--vermelho-claro)} .stat.gp b{color:var(--dourado)}
+  .ficha-titulo{font-size:.8rem;text-transform:uppercase;letter-spacing:1px;
+    color:var(--dourado);margin:16px 0 8px;font-weight:700}
+  .elenco-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+  .ply{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);
+    border-radius:9px;padding:7px 9px}
+  .ply .pos-badge{font-size:.6rem;font-weight:700;background:rgba(255,255,255,.12);
+    border-radius:5px;padding:3px 5px;min-width:30px;text-align:center}
+  .ply .ply-nome{flex:1;font-size:.85rem;font-weight:600;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis}
+  .ply .ply-ovr{font-weight:800;color:var(--dourado);font-size:.95rem}
+  .hide{display:none}
+  .pill{display:inline-block;background:rgba(255,255,255,.1);border-radius:20px;
+    padding:4px 12px;font-size:.8rem;margin:2px}
+  footer{text-align:center;opacity:.4;font-size:.75rem;margin:30px 0 10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topo">
+    <h1>COLORADO <b>HISTÓRICO</b></h1>
+    <p>Sorteie times da história do Internacional e monte o XI dos sonhos</p>
+  </header>
+
+  <!-- TELA 1: CONFIGURAÇÃO -->
+  <section id="tela-config" class="card">
+    <h2>⚙️ Monte sua campanha</h2>
+    <div class="label">Postura tática</div>
+    <div class="opcoes" id="op-postura"></div>
+    <p id="postura-desc" style="opacity:.6;font-size:.8rem;margin-top:6px"></p>
+    <div class="label">Formação</div>
+    <div class="opcoes" id="op-formacao"></div>
+    <div class="label">Dificuldade</div>
+    <div class="opcoes" id="op-dificuldade"></div>
+    <p style="opacity:.6;font-size:.85rem;margin-top:14px">
+      A cada rodada um time histórico do Inter é sorteado. Escolha 1 jogador para
+      preencher uma posição. São 11 rodadas. Depois, simule a campanha rumo ao título.
+    </p>
+    <button class="btn" id="btn-iniciar">Iniciar escalação ➜</button>
+  </section>
+
+  <!-- TELA 2: DRAFT -->
+  <section id="tela-draft" class="card hide">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2 style="margin:0">🎲 Rodada <span id="rodada-num">1</span>/11</h2>
+      <span class="pill" id="dificuldade-tag"></span>
+    </div>
+    <div class="barra-prog"><i id="prog" style="width:0%"></i></div>
+    <div class="sorteio-time" id="sorteio-time">—</div>
+    <div class="sorteio-ano" id="sorteio-ano"></div>
+    <p style="text-align:center;opacity:.7;font-size:.85rem;margin-bottom:10px">
+      Posições em aberto: <span id="abertas"></span>
+    </p>
+    <div class="jogadores" id="lista-jogadores"></div>
+    <button class="btn sec" id="btn-pular" style="margin-top:12px">Nenhum serve — sortear outro time</button>
+    <div class="label" id="campo-titulo" style="text-align:center;margin-top:14px">Seu time até agora <span style="opacity:.6">(toque num jogador para trocar de posição)</span></div>
+    <div class="campo" id="campo-draft"></div>
+    <button class="btn sec hide" id="btn-cancelar-sel" style="margin-top:14px">↩ Cancelar</button>
+  </section>
+
+  <!-- TELA 3: TIME MONTADO -->
+  <section id="tela-time" class="card hide">
+    <h2>🏆 Seu XI Colorado</h2>
+    <div class="campo" id="campo"></div>
+    <p style="text-align:center;margin-top:14px">Força média do elenco:
+      <b id="forca-media" style="color:var(--dourado);font-size:1.3rem"></b></p>
+    <button class="btn" id="btn-simular">Disputar a Libertadores 🏆</button>
+    <button class="btn sec" id="btn-reset">Recomeçar</button>
+  </section>
+
+  <!-- TELA 4: PARTIDA AO VIVO -->
+  <section id="tela-jogo" class="card hide">
+    <div class="jogo-fase" id="jogo-fase"></div>
+    <div class="placar-wrap">
+      <div class="lado">
+        <div class="time-nome">🔴 Internacional</div>
+        <div class="time-forca" id="jogo-forca-casa"></div>
+      </div>
+      <div class="placar-grande"><span id="g-casa">0</span><i>x</i><span id="g-fora">0</span></div>
+      <div class="lado">
+        <div class="time-nome" id="jogo-fora-nome">—</div>
+        <div class="time-forca" id="jogo-forca-fora"></div>
+      </div>
+    </div>
+    <div class="relogio-wrap">
+      <div class="relogio"><span id="jogo-min">0</span>'</div>
+      <div class="barra-tempo"><i id="tempo-fill" style="width:0%"></i></div>
+    </div>
+    <div class="eventos" id="jogo-eventos"></div>
+    <div class="velocidades" id="jogo-velocidades"></div>
+    <button class="btn hide" id="btn-prox-jogo">Próximo jogo ➜</button>
+  </section>
+
+  <!-- TELA 5: RESUMO DA CAMPANHA -->
+  <section id="tela-campanha" class="card hide">
+    <div class="final-msg" id="final-msg"></div>
+    <div class="ficha">
+      <div class="ficha-topo">
+        <div class="ficha-over"><span id="ficha-over-num">0</span><small>OVERALL</small></div>
+        <div class="ficha-tatica"><b id="ficha-form"></b><span id="ficha-post"></span></div>
+      </div>
+      <div class="stats-grid" id="stats-grid"></div>
+      <div class="ficha-titulo">⚽ Elenco</div>
+      <div class="elenco-grid" id="elenco-grid"></div>
+      <div class="ficha-titulo">📋 Resultados</div>
+      <div id="lista-partidas"></div>
+    </div>
+    <button class="btn" id="btn-novo">Jogar novamente</button>
+  </section>
+
+  <footer>Fan game não-oficial • Dados de exemplo — edite o array TIMES no código</footer>
+</div>
+
+<script>
+/* ============================================================
+   DADOS — TIMES HISTÓRICOS DO INTERNACIONAL (exemplo, edite!)
+   pos: GOL, LAT, ZAG, VOL, MEI, ATA
+   forca: 70-99
+   ============================================================ */
+/* pos = lista de posições onde o jogador atuou (a 1ª é a principal)
+   GOL goleiro · ZAG zagueiro · LD lateral-direito · LE lateral-esquerdo
+   VOL volante · MC meia-central · MD meia-direita · ME meia-esquerda
+   MEI meia-armador · PD ponta-direita · PE ponta-esquerda · CA centroavante */
+const TIMES = [
+  { nome:"1975 / 1976", ano:"Bicampeão Brasileiro", jogadores:[
+    {nome:"Manga", pos:["GOL"], forca:87},
+    {nome:"Gilmar", pos:["GOL"], forca:74},
+    {nome:"Valdomiro", pos:["PD","MD"], forca:85},
+    {nome:"Vacaria", pos:["LE","ZAG"], forca:75},
+    {nome:"Chico Fraga", pos:["ZAG","LD"], forca:77},
+    {nome:"Figueroa", pos:["ZAG"], forca:93},
+    {nome:"Vavá", pos:["ZAG","LD"], forca:78},
+    {nome:"Cláudio Olinto", pos:["LD"], forca:74},
+    {nome:"Carpegiani", pos:["VOL","MC"], forca:85},
+    {nome:"Caçapava", pos:["VOL"], forca:80},
+    {nome:"Batista", pos:["VOL","MC"], forca:84},
+    {nome:"Falcão", pos:["MC","MEI"], forca:94},
+    {nome:"Marco Aurélio", pos:["MC","MEI"], forca:82},
+    {nome:"Flávio", pos:["CA"], forca:83},
+    {nome:"Dario (Dadá)", pos:["CA"], forca:86},
+    {nome:"Lula", pos:["PE","ME"], forca:80},
+    {nome:"Escurinho", pos:["PD","ME"], forca:78},
+    {nome:"Claudiomiro", pos:["PD","CA"], forca:84},
+    {nome:"Tarciso", pos:["PE","PD"], forca:80},
+    {nome:"Jair", pos:["MEI","MC"], forca:78},
+  ]},
+  { nome:"1979", ano:"Tricampeão Invicto", jogadores:[
+    {nome:"Benítez", pos:["GOL"], forca:80},
+    {nome:"Manga", pos:["GOL"], forca:83},
+    {nome:"Mauro Galvão", pos:["ZAG","VOL"], forca:83},
+    {nome:"João Carlos", pos:["ZAG"], forca:78},
+    {nome:"Tovar", pos:["ZAG"], forca:77},
+    {nome:"Bira", pos:["LE","LD"], forca:77},
+    {nome:"Mauro Pastor", pos:["LD"], forca:74},
+    {nome:"Batista", pos:["VOL","MC"], forca:84},
+    {nome:"Falcão", pos:["MC","MEI"], forca:95},
+    {nome:"Mário Sérgio", pos:["MEI","ME","MC"], forca:84},
+    {nome:"Jair", pos:["MEI","MC"], forca:79},
+    {nome:"Valdomiro", pos:["PD","MD"], forca:83},
+    {nome:"Tarciso", pos:["PE","PD"], forca:79},
+    {nome:"Chico Spina", pos:["CA"], forca:79},
+    {nome:"Marco Antônio", pos:["CA"], forca:78},
+    {nome:"Bóris", pos:["CA","PD"], forca:77},
+    {nome:"Cláudio Mineiro", pos:["PE","PD"], forca:76},
+  ]},
+  { nome:"1985 — 1994", ano:"Geração de ouro", jogadores:[
+    {nome:"Taffarel", pos:["GOL"], forca:86},
+    {nome:"Gilmar Rinaldi", pos:["GOL"], forca:81},
+    {nome:"Roberto Gaúcho", pos:["GOL"], forca:77},
+    {nome:"Wilson Gottardo", pos:["ZAG"], forca:79},
+    {nome:"Índio (zagueiro)", pos:["ZAG"], forca:78},
+    {nome:"Balalo", pos:["ZAG","LD"], forca:75},
+    {nome:"Luís Carlos Winck", pos:["LD","LE"], forca:78},
+    {nome:"Aílton", pos:["VOL","MC"], forca:78},
+    {nome:"Dunga", pos:["VOL","MC"], forca:88},
+    {nome:"Paulo Roberto", pos:["VOL"], forca:75},
+    {nome:"Amarildo", pos:["MEI","CA"], forca:76},
+    {nome:"Adãozinho", pos:["PD","PE"], forca:75},
+    {nome:"Nílson", pos:["CA","PE"], forca:81},
+    {nome:"Jardel", pos:["CA"], forca:85},
+    {nome:"Marquinhos Santos", pos:["MEI","MC"], forca:74},
+  ]},
+  { nome:"2006", ano:"Campeão do Mundo", jogadores:[
+    {nome:"Clemer", pos:["GOL"], forca:82},
+    {nome:"Lauro", pos:["GOL"], forca:77},
+    {nome:"Ceará", pos:["LD"], forca:80},
+    {nome:"Wellington Monteiro", pos:["LE"], forca:76},
+    {nome:"Índio", pos:["ZAG"], forca:86},
+    {nome:"Fabiano Eller", pos:["ZAG"], forca:79},
+    {nome:"Wilson Goiano", pos:["ZAG"], forca:74},
+    {nome:"Tinga", pos:["VOL","MC","LD"], forca:83},
+    {nome:"Edinho", pos:["VOL"], forca:78},
+    {nome:"Perdigão", pos:["VOL"], forca:76},
+    {nome:"Iarley", pos:["MEI","MC"], forca:80},
+    {nome:"Alex", pos:["MEI","MC"], forca:78},
+    {nome:"Jorge Wagner", pos:["MEI","ME"], forca:81},
+    {nome:"Michel", pos:["MEI","MC"], forca:76},
+    {nome:"Élder Granja", pos:["PE","MEI"], forca:74},
+    {nome:"Rafael Sóbis", pos:["CA","MEI"], forca:84},
+    {nome:"Fernandão", pos:["CA","MEI"], forca:90},
+    {nome:"Luizão", pos:["CA"], forca:82},
+    {nome:"Adriano Gabiru", pos:["CA","PD"], forca:77},
+  ]},
+  { nome:"2008", ano:"Campeão da Sul-Americana", jogadores:[
+    {nome:"Lauro", pos:["GOL"], forca:78},
+    {nome:"Renan", pos:["GOL"], forca:79},
+    {nome:"Bolívar", pos:["ZAG"], forca:82},
+    {nome:"Índio", pos:["ZAG"], forca:85},
+    {nome:"Danny Morais", pos:["ZAG"], forca:76},
+    {nome:"Kléber", pos:["LE","CA"], forca:79},
+    {nome:"Nei", pos:["LD"], forca:76},
+    {nome:"Guiñazú", pos:["VOL","MC"], forca:83},
+    {nome:"Sandro Silva", pos:["VOL"], forca:77},
+    {nome:"Wilson", pos:["VOL"], forca:75},
+    {nome:"Magrão", pos:["MEI","MC"], forca:79},
+    {nome:"Andrezinho", pos:["MEI","MC"], forca:79},
+    {nome:"Alex", pos:["MEI","MC"], forca:80},
+    {nome:"Jorge Wagner", pos:["MEI","ME"], forca:80},
+    {nome:"Taison", pos:["PE","MEI","PD"], forca:80},
+    {nome:"Nilmar", pos:["CA","PE"], forca:83},
+    {nome:"Alexandre Pato", pos:["CA","MEI"], forca:82},
+  ]},
+  { nome:"2010", ano:"Bi da Libertadores", jogadores:[
+    {nome:"Renan", pos:["GOL"], forca:80},
+    {nome:"Lacerda", pos:["GOL"], forca:78},
+    {nome:"Nei", pos:["LD"], forca:76},
+    {nome:"Kléber", pos:["LE","CA"], forca:82},
+    {nome:"Bolívar", pos:["ZAG"], forca:83},
+    {nome:"Índio", pos:["ZAG"], forca:85},
+    {nome:"Sorondo", pos:["ZAG"], forca:79},
+    {nome:"Danny Morais", pos:["ZAG"], forca:77},
+    {nome:"Guiñazú", pos:["VOL","MC"], forca:84},
+    {nome:"Tinga", pos:["VOL","MC","LD"], forca:81},
+    {nome:"Sandro", pos:["VOL"], forca:78},
+    {nome:"Giuliano", pos:["MEI","MC"], forca:85},
+    {nome:"D'Alessandro", pos:["MEI","MC","PE"], forca:92},
+    {nome:"Taison", pos:["PE","MEI","PD"], forca:80},
+    {nome:"Pinga", pos:["PD","CA"], forca:75},
+    {nome:"Alecsandro", pos:["CA"], forca:82},
+    {nome:"Rafael Sóbis", pos:["CA","MEI"], forca:83},
+    {nome:"Leandro Damião", pos:["CA"], forca:83},
+  ]},
+  { nome:"2015", ano:"Campeonato Brasileiro", jogadores:[
+    {nome:"Alisson", pos:["GOL"], forca:85},
+    {nome:"Muriel", pos:["GOL"], forca:76},
+    {nome:"Fabrício", pos:["LD","LE"], forca:75},
+    {nome:"Cláudio Winck", pos:["LD"], forca:74},
+    {nome:"Alan Costa", pos:["ZAG"], forca:75},
+    {nome:"Ernando", pos:["ZAG","VOL"], forca:76},
+    {nome:"Juan", pos:["ZAG"], forca:80},
+    {nome:"Paulão", pos:["ZAG"], forca:74},
+    {nome:"Geferson", pos:["LE"], forca:73},
+    {nome:"Nilton", pos:["VOL"], forca:77},
+    {nome:"Rodrigo Dourado", pos:["VOL","ZAG"], forca:76},
+    {nome:"Anderson", pos:["MC","MEI"], forca:75},
+    {nome:"Aránguiz", pos:["VOL","MC"], forca:82},
+    {nome:"D'Alessandro", pos:["MEI","MC","PE"], forca:86},
+    {nome:"Valdívia", pos:["MEI","MC"], forca:76},
+    {nome:"Andrigo", pos:["MEI","PD"], forca:73},
+    {nome:"Vitinho", pos:["PD","PE","MEI"], forca:79},
+    {nome:"Jorge Henrique", pos:["PD","PE"], forca:76},
+    {nome:"Lisandro López", pos:["CA"], forca:80},
+    {nome:"Rafael Moura", pos:["CA"], forca:78},
+    {nome:"Eduardo Sasha", pos:["CA","PE"], forca:74},
+  ]},
+  { nome:"2016", ano:"Campeonato Brasileiro", jogadores:[
+    {nome:"Alisson", pos:["GOL"], forca:85},
+    {nome:"Danilo Fernandes", pos:["GOL"], forca:76},
+    {nome:"Cláudio Winck", pos:["LD"], forca:74},
+    {nome:"William", pos:["LD","ZAG"], forca:73},
+    {nome:"Eduardo", pos:["ZAG"], forca:74},
+    {nome:"Paulão", pos:["ZAG"], forca:72},
+    {nome:"Ernando", pos:["ZAG","VOL"], forca:75},
+    {nome:"Geferson", pos:["LE"], forca:72},
+    {nome:"Fabrício", pos:["LD","LE"], forca:73},
+    {nome:"Rodrigo Dourado", pos:["VOL","ZAG"], forca:76},
+    {nome:"Anderson", pos:["MC","MEI"], forca:75},
+    {nome:"Seijas", pos:["MEI","MC"], forca:73},
+    {nome:"Valdívia", pos:["MEI","MC"], forca:76},
+    {nome:"Wellington Silva", pos:["PD","MEI"], forca:74},
+    {nome:"Andrigo", pos:["MEI","PD"], forca:73},
+    {nome:"Vitinho", pos:["PD","PE"], forca:78},
+    {nome:"Marcelo Cirino", pos:["CA","PD"], forca:76},
+    {nome:"Eduardo Sasha", pos:["CA","PE"], forca:74},
+    {nome:"Brenner", pos:["CA"], forca:71},
+  ]},
+  { nome:"2018 — 2023", ano:"Era recente", jogadores:[
+    {nome:"Marcelo Lomba", pos:["GOL"], forca:79},
+    {nome:"Daniel", pos:["GOL"], forca:75},
+    {nome:"Saravia", pos:["LD"], forca:77},
+    {nome:"Heitor", pos:["LD"], forca:74},
+    {nome:"Renê", pos:["LE"], forca:76},
+    {nome:"Rodrigo Moledo", pos:["ZAG"], forca:79},
+    {nome:"Cuesta", pos:["ZAG"], forca:79},
+    {nome:"Vitão", pos:["ZAG"], forca:80},
+    {nome:"Mercado", pos:["ZAG","LD"], forca:79},
+    {nome:"Bruno Méndez", pos:["ZAG","LD"], forca:77},
+    {nome:"Edenílson", pos:["VOL","MC"], forca:81},
+    {nome:"Rodrigo Dourado", pos:["VOL"], forca:78},
+    {nome:"Patrick", pos:["MEI","MC"], forca:80},
+    {nome:"Carlos De Pena", pos:["MEI","ME"], forca:78},
+    {nome:"Maurício", pos:["MEI","MC"], forca:78},
+    {nome:"Alan Patrick", pos:["MEI","MC"], forca:83},
+    {nome:"D'Alessandro", pos:["MEI","MC","PE"], forca:85},
+    {nome:"Wanderson", pos:["PE","PD"], forca:80},
+    {nome:"Taison", pos:["PE","MEI","PD"], forca:82},
+    {nome:"Guerrero", pos:["CA"], forca:83},
+    {nome:"Yuri Alberto", pos:["CA"], forca:81},
+    {nome:"Thiago Galhardo", pos:["MEI","CA"], forca:80},
+  ]},
+  { nome:"2024 / 2025", ano:"Era Roger Machado", jogadores:[
+    {nome:"Rochet", pos:["GOL"], forca:83},
+    {nome:"Anthoni", pos:["GOL"], forca:75},
+    {nome:"Bustos", pos:["LD"], forca:78},
+    {nome:"Wesley", pos:["PD","LD"], forca:77},
+    {nome:"Bernabei", pos:["LE"], forca:78},
+    {nome:"Renê", pos:["LE"], forca:75},
+    {nome:"Vitão", pos:["ZAG"], forca:80},
+    {nome:"Mercado", pos:["ZAG"], forca:78},
+    {nome:"Rogel", pos:["ZAG"], forca:77},
+    {nome:"Clayton Sampaio", pos:["ZAG"], forca:74},
+    {nome:"Fernando", pos:["VOL","MC"], forca:81},
+    {nome:"Thiago Maia", pos:["VOL","MC"], forca:80},
+    {nome:"Aránguiz", pos:["VOL","MC"], forca:79},
+    {nome:"Bruno Henrique", pos:["VOL","MC"], forca:79},
+    {nome:"Gabriel Carvalho", pos:["MEI","MC"], forca:74},
+    {nome:"Alan Patrick", pos:["MEI","MC"], forca:84},
+    {nome:"Wanderson", pos:["PE","PD"], forca:80},
+    {nome:"Alario", pos:["CA"], forca:79},
+    {nome:"Borré", pos:["CA"], forca:80},
+    {nome:"Enner Valencia", pos:["CA"], forca:80},
+  ]},
+  { nome:"2009", ano:"Vice-campeão Brasileiro", jogadores:[
+    {nome:"Renan", pos:["GOL"], forca:80},
+    {nome:"Lauro", pos:["GOL"], forca:77},
+    {nome:"Nei", pos:["LD"], forca:76},
+    {nome:"Bolívar", pos:["ZAG"], forca:82},
+    {nome:"Índio", pos:["ZAG"], forca:85},
+    {nome:"Danny Morais", pos:["ZAG"], forca:77},
+    {nome:"Kléber", pos:["LE","CA"], forca:81},
+    {nome:"Sandro", pos:["VOL"], forca:78},
+    {nome:"Guiñazú", pos:["VOL","MC"], forca:84},
+    {nome:"Tinga", pos:["VOL","MC","LD"], forca:81},
+    {nome:"Andrezinho", pos:["MEI","MC"], forca:79},
+    {nome:"D'Alessandro", pos:["MEI","MC","PE"], forca:90},
+    {nome:"Giuliano", pos:["MEI","MC"], forca:83},
+    {nome:"Taison", pos:["PE","MEI","PD"], forca:80},
+    {nome:"Jorge Wagner", pos:["MEI","ME"], forca:80},
+    {nome:"Alecsandro", pos:["CA"], forca:82},
+    {nome:"Nilmar", pos:["CA","PE"], forca:83},
+    {nome:"Walter", pos:["CA"], forca:78},
+  ]},
+  { nome:"2012 / 2013", ano:"Era Forlán", jogadores:[
+    {nome:"Dida", pos:["GOL"], forca:81},
+    {nome:"Muriel", pos:["GOL"], forca:77},
+    {nome:"Fabrício", pos:["LD","LE"], forca:75},
+    {nome:"Cláudio Winck", pos:["LD"], forca:74},
+    {nome:"Juan", pos:["ZAG"], forca:80},
+    {nome:"Rodrigo Moledo", pos:["ZAG"], forca:78},
+    {nome:"Bruno Rodrigo", pos:["ZAG"], forca:75},
+    {nome:"Kléber", pos:["LE","CA"], forca:80},
+    {nome:"Willians", pos:["VOL","MC"], forca:78},
+    {nome:"Fred", pos:["VOL"], forca:77},
+    {nome:"Otávio", pos:["VOL","MC"], forca:76},
+    {nome:"D'Alessandro", pos:["MEI","MC","PE"], forca:87},
+    {nome:"Forlán", pos:["CA","MEI"], forca:85},
+    {nome:"Jorge Henrique", pos:["PD","PE"], forca:76},
+    {nome:"Scocco", pos:["CA","MEI"], forca:82},
+    {nome:"Leandro Damião", pos:["CA"], forca:84},
+    {nome:"Rafael Moura", pos:["CA"], forca:78},
+  ]},
+  { nome:"1940 — 1948", ano:"Rolo Compressor", jogadores:[
+    {nome:"Ivo Winck", pos:["GOL"], forca:83},
+    {nome:"Alfeu", pos:["ZAG","LD"], forca:80},
+    {nome:"Nena", pos:["ZAG","LE"], forca:80},
+    {nome:"Ávila", pos:["ZAG","VOL"], forca:82},
+    {nome:"Assis", pos:["VOL","MC"], forca:81},
+    {nome:"Abigail", pos:["MC","VOL"], forca:80},
+    {nome:"Russinho", pos:["MD","MEI"], forca:82},
+    {nome:"Rui", pos:["MEI","CA"], forca:84},
+    {nome:"Tesourinha", pos:["PD","PE","CA"], forca:90},
+    {nome:"Vilalba", pos:["CA"], forca:82},
+    {nome:"Carlitos", pos:["CA"], forca:92},
+    {nome:"Adãozinho", pos:["CA","MEI"], forca:86},
+  ]},
+  { nome:"1992", ano:"Campeão da Copa do Brasil", jogadores:[
+    {nome:"Gato Fernández", pos:["GOL"], forca:82},
+    {nome:"Célio Lino", pos:["LD"], forca:78},
+    {nome:"Célio Silva", pos:["ZAG"], forca:81},
+    {nome:"Pinga", pos:["ZAG"], forca:77},
+    {nome:"Daniel Franco", pos:["LE"], forca:77},
+    {nome:"Ricardo Costa", pos:["VOL"], forca:78},
+    {nome:"Élson", pos:["VOL","MC"], forca:79},
+    {nome:"Silas", pos:["MEI","MC"], forca:81},
+    {nome:"Marquinhos", pos:["MC","MEI"], forca:79},
+    {nome:"Maurício", pos:["PD","MEI"], forca:80},
+    {nome:"Caíco", pos:["PE","CA"], forca:76},
+    {nome:"Luciano Souza", pos:["MC","VOL"], forca:75},
+    {nome:"Nando", pos:["CA"], forca:75},
+    {nome:"Gérson", pos:["CA"], forca:82},
+  ]},
+  { nome:"2011", ano:"Bi da Recopa Sul-Americana", jogadores:[
+    {nome:"Muriel", pos:["GOL"], forca:80},
+    {nome:"Lacerda", pos:["GOL"], forca:77},
+    {nome:"Nei", pos:["LD"], forca:77},
+    {nome:"Kléber", pos:["LE","CA"], forca:82},
+    {nome:"Bolívar", pos:["ZAG"], forca:83},
+    {nome:"Índio", pos:["ZAG"], forca:84},
+    {nome:"Sorondo", pos:["ZAG"], forca:78},
+    {nome:"Guiñazú", pos:["VOL","MC"], forca:84},
+    {nome:"Elton", pos:["VOL"], forca:77},
+    {nome:"Tinga", pos:["VOL","MC","LD"], forca:81},
+    {nome:"Oscar", pos:["MEI","MC"], forca:82},
+    {nome:"D'Alessandro", pos:["MEI","MC","PE"], forca:90},
+    {nome:"Giuliano", pos:["MEI","MC"], forca:84},
+    {nome:"Andrezinho", pos:["MEI","MC"], forca:78},
+    {nome:"Dellatorre", pos:["CA"], forca:74},
+    {nome:"Leandro Damião", pos:["CA"], forca:85},
+    {nome:"Jô", pos:["CA"], forca:79},
+  ]},
+];
+
+const FORMACOES = {
+  // DEFENSIVO
+  "5-3-2":["GOL","LD","ZAG","ZAG","ZAG","LE","VOL","MC","MC","CA","CA"],
+  "5-4-1":["GOL","LD","ZAG","ZAG","ZAG","LE","MD","MC","MC","ME","CA"],
+  "4-5-1":["GOL","LD","ZAG","ZAG","LE","VOL","MC","MC","MD","ME","CA"],
+  // EQUILIBRADO
+  "4-4-2":["GOL","LD","ZAG","ZAG","LE","MD","MC","MC","ME","CA","CA"],
+  "4-2-3-1":["GOL","LD","ZAG","ZAG","LE","VOL","VOL","PD","MEI","PE","CA"],
+  "3-5-2":["GOL","ZAG","ZAG","ZAG","LD","LE","VOL","MC","MEI","CA","CA"],
+  // OFENSIVO
+  "4-3-3":["GOL","LD","ZAG","ZAG","LE","VOL","MC","MC","PD","CA","PE"],
+  "3-4-3":["GOL","ZAG","ZAG","ZAG","LD","LE","MC","MC","PD","CA","PE"],
+  "4-2-4":["GOL","LD","ZAG","ZAG","LE","MC","MC","PD","CA","CA","PE"],
+};
+
+// posições no campo (em %) por formação — mesma ordem dos slots acima
+const POSICOES_CAMPO = {
+  "5-3-2":[[50,93],[88,68],[30,76],[50,78],[70,76],[12,68],[50,52],[32,46],[68,46],[38,18],[62,18]],
+  "5-4-1":[[50,93],[88,66],[30,77],[50,79],[70,77],[12,66],[82,48],[40,46],[60,46],[18,48],[50,16]],
+  "4-5-1":[[50,93],[15,73],[38,77],[62,77],[85,73],[50,56],[35,48],[65,48],[85,44],[15,44],[50,16]],
+  "4-4-2":[[50,92],[15,72],[38,76],[62,76],[85,72],[82,50],[58,50],[42,50],[18,50],[38,18],[62,18]],
+  "4-2-3-1":[[50,93],[15,72],[38,76],[62,76],[85,72],[38,54],[62,54],[82,34],[50,38],[18,34],[50,16]],
+  "3-5-2":[[50,92],[35,76],[50,79],[65,76],[88,56],[12,56],[50,58],[35,46],[65,44],[40,18],[60,18]],
+  "4-3-3":[[50,92],[15,72],[38,76],[62,76],[85,72],[50,56],[35,48],[65,48],[82,22],[50,15],[18,22]],
+  "3-4-3":[[50,93],[30,77],[50,78],[70,77],[88,56],[12,56],[38,50],[62,50],[82,22],[50,16],[18,22]],
+  "4-2-4":[[50,93],[15,72],[38,76],[62,76],[85,72],[38,52],[62,52],[82,24],[40,15],[60,15],[18,24]],
+};
+
+// posturas reais: formações típicas + efeito na simulação
+const POSTURAS = {
+  "Defensivo":  { formacoes:["5-3-2","5-4-1","4-5-1"], atk:-0.3, sofridos:-0.7,
+    desc:"Linha de 5 ou 5 meias. Cede a bola, fecha os espaços e sai no contra-ataque." },
+  "Equilibrado":{ formacoes:["4-4-2","4-2-3-1","3-5-2"], atk:0, sofridos:0,
+    desc:"Times clássicos e versáteis, com igualdade entre defender e atacar." },
+  "Ofensivo":   { formacoes:["4-3-3","3-4-3","4-2-4"], atk:0.7, sofridos:0.4,
+    desc:"Pressão alta e pontas abertas. Faz mais gols, mas se expõe na defesa." },
+};
+
+// clubes da Libertadores (históricos e atuais) + força e artilheiros reais
+const CLUBES = [
+  {nome:"Boca Juniors", pais:"ARG", forca:88, estrelas:["Riquelme","Palermo","Tevez"]},
+  {nome:"River Plate", pais:"ARG", forca:88, estrelas:["Francescoli","Saviola","Borja"]},
+  {nome:"Estudiantes", pais:"ARG", forca:83, estrelas:["Verón","Boselli"]},
+  {nome:"Independiente", pais:"ARG", forca:84, estrelas:["Bochini","Burruchaga"]},
+  {nome:"Racing", pais:"ARG", forca:82, estrelas:["Milito","López"]},
+  {nome:"Vélez Sarsfield", pais:"ARG", forca:82, estrelas:["Bassedas","Tacuara Cardozo"]},
+  {nome:"Peñarol", pais:"URU", forca:84, estrelas:["Morena","Aguirre"]},
+  {nome:"Nacional", pais:"URU", forca:83, estrelas:["Recoba","Suárez"]},
+  {nome:"Olimpia", pais:"PAR", forca:82, estrelas:["Báez","Acuña"]},
+  {nome:"Cerro Porteño", pais:"PAR", forca:79, estrelas:["Benítez"]},
+  {nome:"Colo-Colo", pais:"CHI", forca:83, estrelas:["Zamorano","Barticciotto"]},
+  {nome:"Universidad de Chile", pais:"CHI", forca:81, estrelas:["Salah","Vargas"]},
+  {nome:"LDU Quito", pais:"EQU", forca:82, estrelas:["Bieler","Manso"]},
+  {nome:"Barcelona SC", pais:"EQU", forca:80, estrelas:["Delgado"]},
+  {nome:"Atlético Nacional", pais:"COL", forca:83, estrelas:["Aristizábal","Borja"]},
+  {nome:"Once Caldas", pais:"COL", forca:79, estrelas:["Dinas"]},
+  {nome:"Flamengo", pais:"BRA", forca:89, estrelas:["Zico","Gabigol","Arrascaeta"]},
+  {nome:"Palmeiras", pais:"BRA", forca:88, estrelas:["Edmundo","Dudu","Endrick"]},
+  {nome:"São Paulo", pais:"BRA", forca:87, estrelas:["Raí","Rogério Ceni","Luís Fabiano"]},
+  {nome:"Santos", pais:"BRA", forca:87, estrelas:["Pelé","Neymar","Robinho"]},
+  {nome:"Grêmio", pais:"BRA", forca:85, estrelas:["Renato Gaúcho","Ronaldinho"]},
+  {nome:"Corinthians", pais:"BRA", forca:84, estrelas:["Marcelinho","Paulinho"]},
+  {nome:"Atlético-MG", pais:"BRA", forca:85, estrelas:["Ronaldinho","Hulk"]},
+  {nome:"Cruzeiro", pais:"BRA", forca:84, estrelas:["Sorín","Fred"]},
+];
+const FASES = [
+  {tipo:"grupo", nome:"Fase de Grupos — 1ª rodada"},
+  {tipo:"grupo", nome:"Fase de Grupos — 2ª rodada"},
+  {tipo:"grupo", nome:"Fase de Grupos — 3ª rodada"},
+  {tipo:"mata",  nome:"Oitavas de final"},
+  {tipo:"mata",  nome:"Quartas de final"},
+  {tipo:"mata",  nome:"Semifinal"},
+  {tipo:"mata",  nome:"FINAL"},
+];
+
+/* ============================================================
+   ESTADO
+   ============================================================ */
+let estado = {
+  postura:"Equilibrado",
+  formacao:"4-4-2",
+  dificuldade:"classico",
+  slots:[],        // {pos, jogador|null}
+  rodada:0,
+  timeAtual:null,
+};
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const rand = arr => arr[Math.floor(Math.random()*arr.length)];
+function mostrar(id){
+  ["tela-config","tela-draft","tela-time","tela-jogo","tela-campanha"]
+    .forEach(t=>$("#"+t).classList.add("hide"));
+  $("#"+id).classList.remove("hide");
+}
+
+/* ---------- TELA CONFIG ---------- */
+function initConfig(){
+  const op=$("#op-postura"); op.innerHTML="";
+  Object.keys(POSTURAS).forEach(p=>{
+    const c=document.createElement("div");
+    c.className="chip"+(p===estado.postura?" sel":"");c.textContent=p;
+    c.onclick=()=>{[...op.children].forEach(x=>x.classList.remove("sel"));
+      c.classList.add("sel");estado.postura=p;renderFormacoes();};
+    op.appendChild(c);
+  });
+  renderFormacoes();
+  const od=$("#op-dificuldade"); od.innerHTML="";
+  [["classico","Clássico (mostra força)"],["almanaque","Almanaque (força oculta)"]]
+  .forEach(([k,txt],i)=>{
+    const c=document.createElement("div");
+    c.className="chip"+(i===0?" sel":"");c.textContent=txt;
+    c.onclick=()=>{[...od.children].forEach(x=>x.classList.remove("sel"));
+      c.classList.add("sel");estado.dificuldade=k;};
+    od.appendChild(c);
+  });
+}
+// formações disponíveis para a postura atual
+function renderFormacoes(){
+  const of=$("#op-formacao"); of.innerHTML="";
+  const lista=POSTURAS[estado.postura].formacoes;
+  estado.formacao=lista[0];
+  lista.forEach((f,i)=>{
+    const c=document.createElement("div");
+    c.className="chip"+(i===0?" sel":"");c.textContent=f;
+    c.onclick=()=>{[...of.children].forEach(x=>x.classList.remove("sel"));
+      c.classList.add("sel");estado.formacao=f;};
+    of.appendChild(c);
+  });
+  $("#postura-desc").textContent=POSTURAS[estado.postura].desc;
+}
+
+$("#btn-iniciar").onclick=()=>{
+  estado.slots = FORMACOES[estado.formacao].map(p=>({pos:p,jogador:null}));
+  estado.rodada=0;
+  estado.escolhidos=new Set();
+  estado.jogadorSel=null; estado.troca=null;
+  $("#dificuldade-tag").textContent =
+    estado.dificuldade==="classico"?"Clássico":"Almanaque";
+  mostrar("tela-draft");
+  proximaRodada();
+};
+
+/* ---------- DRAFT ---------- */
+function posicoesAbertas(){
+  return [...new Set(estado.slots.filter(s=>!s.jogador).map(s=>s.pos))];
+}
+// destinos abertos válidos para mover um jogador (exclui o slot ignorado)
+function destinosValidos(jog, ignorarIdx){
+  return estado.slots
+    .map((s,i)=>i)
+    .filter(i=> i!==ignorarIdx && !estado.slots[i].jogador && jog.pos.includes(estado.slots[i].pos));
+}
+// pode escalar j? (posição aberta OU troca possível)
+function podeColocar(j){
+  if(estado.escolhidos.has(j.nome)) return false;
+  const aberto = estado.slots.some(s=>!s.jogador && j.pos.includes(s.pos));
+  if(aberto) return true;
+  return estado.slots.some((s,i)=> s.jogador && j.pos.includes(s.pos)
+      && destinosValidos(s.jogador, i).length>0);
+}
+function proximaRodada(){
+  if(estado.slots.every(s=>s.jogador)){ montarTime(); return; }
+  estado.rodada++;
+  estado.redrawUsado=false;
+  estado.timeAtual = rand(TIMES);
+  $("#rodada-num").textContent=estado.rodada;
+  $("#prog").style.width=((estado.rodada-1)/11*100)+"%";
+  $("#sorteio-time").textContent=estado.timeAtual.nome;
+  $("#sorteio-ano").textContent=estado.timeAtual.ano;
+  $("#abertas").textContent=posicoesAbertas().join(" · ");
+  renderJogadores();
+}
+function renderJogadores(){
+  estado.jogadorSel=null; estado.troca=null; estado.repos=null;
+  $("#lista-jogadores").classList.remove("hide");
+  $("#btn-cancelar-sel").classList.add("hide");
+  $("#campo-titulo").textContent="Seu time até agora";
+  desenharCampoAtual();
+  const lista=$("#lista-jogadores"); lista.innerHTML="";
+  estado.timeAtual.jogadores.forEach(j=>{
+    const ok=podeColocar(j);
+    const div=document.createElement("div");
+    div.className="jog"+(ok?"":" off");
+    const forcaTxt = estado.dificuldade==="classico" ? j.forca : "?";
+    const tag = estado.escolhidos.has(j.nome) ? " • já escalado" : "";
+    div.innerHTML=`<div class="info"><b>${j.nome}</b>
+      <span>${j.pos.join(" / ")}${tag}</span></div>
+      <div class="forca">${forcaTxt}</div>`;
+    if(ok) div.onclick=()=>selecionarJogador(j);
+    lista.appendChild(div);
+  });
+  const bp=$("#btn-pular");
+  bp.classList.remove("hide");
+  bp.disabled=estado.redrawUsado;
+  bp.textContent=estado.redrawUsado
+    ? "Sorteio já usado nesta rodada"
+    : "Não gostou? Sortear outro time (1x)";
+}
+// passo 1: jogador escolhido -> campo para colocar (verde=livre, dourado=trocar)
+function selecionarJogador(j){
+  estado.jogadorSel=j; estado.troca=null;
+  $("#lista-jogadores").classList.add("hide");
+  $("#btn-pular").classList.add("hide");
+  $("#btn-cancelar-sel").classList.remove("hide");
+  $("#campo-titulo").innerHTML="Toque na posição para colocar <b style='color:var(--dourado)'>"+j.nome+" ("+j.pos.join("/")+")</b>";
+  desenharColocar(j);
+}
+// slots ocupados (diferentes) onde dá pra trocar mutuamente com jog
+function swapsValidos(jog, idx){
+  return estado.slots.map((s,i)=>i).filter(i=>{
+    if(i===idx) return false;
+    const o=estado.slots[i].jogador;
+    if(!o) return false;
+    return jog.pos.includes(estado.slots[i].pos) && o.pos.includes(estado.slots[idx].pos);
+  });
+}
+// campo da escalação atual — clicar num jogador permite reposicionar/trocar
+function desenharCampoAtual(){
+  const campo=$("#campo-draft"); campo.innerHTML="";
+  const coords=POSICOES_CAMPO[estado.formacao];
+  estado.slots.forEach((s,i)=>{
+    const [x,y]=coords[i];
+    const d=document.createElement("div");
+    const movivel = s.jogador && (destinosValidos(s.jogador,i).length>0 || swapsValidos(s.jogador,i).length>0);
+    d.className="slot "+(s.jogador?"cheio":"vazio")+(movivel?" movivel":"");
+    d.style.left=x+"%"; d.style.top=(100-y)+"%";
+    d.innerHTML=`<div class="bola">${s.pos}</div>
+      <div class="nm">${s.jogador?s.jogador.nome:s.pos}</div>`;
+    if(movivel) d.onclick=()=>iniciarReposicionar(i);
+    campo.appendChild(d);
+  });
+}
+// reposicionar/trocar um jogador já escalado
+function iniciarReposicionar(idx){
+  const jog=estado.slots[idx].jogador;
+  const dests=destinosValidos(jog, idx);
+  const swaps=swapsValidos(jog, idx);
+  if(dests.length===0 && swaps.length===0) return;
+  estado.repos={idx};
+  $("#lista-jogadores").classList.add("hide");
+  $("#btn-pular").classList.add("hide");
+  $("#btn-cancelar-sel").classList.remove("hide");
+  $("#campo-titulo").innerHTML="Mover <b style='color:var(--dourado)'>"+jog.nome+"</b> — verde: vaga livre · dourado: trocar com outro";
+  const campo=$("#campo-draft"); campo.innerHTML="";
+  const coords=POSICOES_CAMPO[estado.formacao];
+  estado.slots.forEach((s,i)=>{
+    const [x,y]=coords[i];
+    const d=document.createElement("div");
+    let cls, acao=null;
+    if(i===idx) cls="cheio origem";
+    else if(dests.includes(i)){ cls="alvo vazio"; acao=()=>moverReposicionar(idx,i); }
+    else if(swaps.includes(i)){ cls="swap cheio"; acao=()=>trocarDois(idx,i); }
+    else cls = s.jogador ? "ocupado cheio" : "indispo vazio";
+    d.className="slot "+cls;
+    d.style.left=x+"%"; d.style.top=(100-y)+"%";
+    d.innerHTML=`<div class="bola">${s.pos}</div>
+      <div class="nm">${s.jogador?s.jogador.nome:s.pos}</div>`;
+    if(acao) d.onclick=acao;
+    campo.appendChild(d);
+  });
+}
+function moverReposicionar(from,to){
+  const jog=estado.slots[from].jogador;
+  estado.slots[to].jogador={...jog, posOriginal:estado.slots[to].pos};
+  estado.slots[from].jogador=null;
+  estado.repos=null;
+  renderJogadores();
+}
+function trocarDois(a,b){
+  const ja=estado.slots[a].jogador, jb=estado.slots[b].jogador;
+  estado.slots[a].jogador={...jb, posOriginal:estado.slots[a].pos};
+  estado.slots[b].jogador={...ja, posOriginal:estado.slots[b].pos};
+  estado.repos=null;
+  renderJogadores();
+}
+function desenharColocar(j){
+  const campo=$("#campo-draft"); campo.innerHTML="";
+  const coords=POSICOES_CAMPO[estado.formacao];
+  estado.slots.forEach((s,i)=>{
+    const [x,y]=coords[i];
+    const d=document.createElement("div");
+    const naPos=j.pos.includes(s.pos);
+    let cls;
+    if(!s.jogador) cls = naPos ? "alvo vazio" : "indispo vazio";
+    else if(naPos && destinosValidos(s.jogador,i).length>0) cls="swap cheio";
+    else cls="ocupado cheio";
+    d.className="slot "+cls;
+    d.style.left=x+"%"; d.style.top=(100-y)+"%";
+    d.innerHTML=`<div class="bola">${s.pos}</div>
+      <div class="nm">${s.jogador?s.jogador.nome:s.pos}</div>`;
+    if(cls.startsWith("alvo")) d.onclick=()=>colocar(i);
+    else if(cls.startsWith("swap")) d.onclick=()=>iniciarTroca(i);
+    campo.appendChild(d);
+  });
+}
+// coloca em slot livre
+function colocar(idx){
+  const j=estado.jogadorSel;
+  estado.slots[idx].jogador={...j, forcaFinal:j.forca, posOriginal:estado.slots[idx].pos};
+  estado.escolhidos.add(j.nome);
+  estado.jogadorSel=null;
+  proximaRodada();
+}
+// troca: mover o ocupante do slot p/ outra posição e colocar o novo
+function iniciarTroca(slotIdx){
+  const occ=estado.slots[slotIdx].jogador;
+  const dests=destinosValidos(occ, slotIdx);
+  if(dests.length===1){ finalizarTroca(slotIdx, dests[0]); return; }
+  estado.troca={novoSlot:slotIdx, occ};
+  $("#sel-nome").textContent="Mover "+occ.nome+" para:";
+  const campo=$("#campo-draft"); campo.innerHTML="";
+  const coords=POSICOES_CAMPO[estado.formacao];
+  estado.slots.forEach((s,i)=>{
+    const [x,y]=coords[i];
+    const d=document.createElement("div");
+    const ehDest=dests.includes(i);
+    const ehNovo=i===slotIdx;
+    d.className="slot "+(ehDest?"alvo vazio":(ehNovo?"swap cheio":(s.jogador?"ocupado cheio":"indispo vazio")));
+    d.style.left=x+"%"; d.style.top=(100-y)+"%";
+    d.innerHTML=`<div class="bola">${s.pos}</div>
+      <div class="nm">${ehNovo?estado.jogadorSel.nome:(s.jogador?s.jogador.nome:s.pos)}</div>`;
+    if(ehDest) d.onclick=()=>finalizarTroca(slotIdx, i);
+    campo.appendChild(d);
+  });
+}
+function finalizarTroca(novoSlot, destSlot){
+  const j=estado.jogadorSel;
+  const occ=estado.slots[novoSlot].jogador;
+  estado.slots[destSlot].jogador={...occ, posOriginal:estado.slots[destSlot].pos};
+  estado.slots[novoSlot].jogador={...j, forcaFinal:j.forca, posOriginal:estado.slots[novoSlot].pos};
+  estado.escolhidos.add(j.nome);
+  estado.jogadorSel=null; estado.troca=null;
+  proximaRodada();
+}
+$("#btn-cancelar-sel").onclick=()=>{ estado.jogadorSel=null; estado.troca=null; estado.repos=null; renderJogadores(); };
+$("#btn-pular").onclick=()=>{
+  if(estado.redrawUsado) return;
+  estado.redrawUsado=true;
+  estado.timeAtual=rand(TIMES);
+  $("#sorteio-time").textContent=estado.timeAtual.nome;
+  $("#sorteio-ano").textContent=estado.timeAtual.ano;
+  $("#abertas").textContent=posicoesAbertas().join(" · ");
+  renderJogadores();
+};
+
+/* ---------- TIME MONTADO ---------- */
+function montarTime(){
+  $("#prog").style.width="100%";
+  const campo=$("#campo"); campo.innerHTML="";
+  const coords=POSICOES_CAMPO[estado.formacao];
+  estado.slots.forEach((s,i)=>{
+    const [x,y]=coords[i];
+    const d=document.createElement("div");
+    d.className="slot "+(s.jogador?"cheio":"vazio");
+    d.style.left=x+"%"; d.style.top=(100-y)+"%";
+    d.innerHTML=`<div class="bola">${s.pos}</div>
+      <div class="nm">${s.jogador?s.jogador.nome:"—"}</div>`;
+    campo.appendChild(d);
+  });
+  $("#forca-media").textContent=forcaMedia().toFixed(1);
+  mostrar("tela-time");
+}
+function forcaMedia(){
+  const arr=estado.slots.map(s=>s.jogador?s.jogador.forcaFinal:60);
+  return arr.reduce((a,b)=>a+b,0)/arr.length;
+}
+
+/* ---------- CAMPANHA LIBERTADORES ---------- */
+$("#btn-simular").onclick=iniciarCampanha;
+const VELOCIDADES=[
+  {nome:"Lento", ms:220},
+  {nome:"Normal", ms:90},
+  {nome:"Rápido", ms:30},
+  {nome:"Instantâneo", ms:0},
+];
+
+function gerarPlacar(minha,dele){
+  const diff=(minha-dele)/8;
+  const p=POSTURAS[estado.postura];
+  const golsMeu=Math.max(0,Math.round(1.4+diff+p.atk+ (Math.random()*2-1)));
+  const golsDel=Math.max(0,Math.round(1.4-diff+p.sofridos+ (Math.random()*2-1)));
+  return [golsMeu,golsDel];
+}
+// artilheiro do Inter ponderado por posição ofensiva
+function escolherArtilheiro(){
+  const peso={CA:6,PE:4,PD:4,MEI:4,ME:2,MD:2,MC:2,VOL:1,LD:1,LE:1,ZAG:1,GOL:0};
+  const pool=[];
+  estado.slots.forEach(s=>{ if(s.jogador){ const n=peso[s.pos]||1;
+    for(let k=0;k<n;k++) pool.push(s.jogador.nome); } });
+  return pool.length?rand(pool):"Internacional";
+}
+function iniciarCampanha(){
+  // sorteia adversários distintos para todas as fases
+  const baralho=[...CLUBES].sort(()=>Math.random()-0.5);
+  estado.campanha={
+    faseIdx:0, pontos:0, historico:[], minha:forcaMedia(),
+    advs: FASES.map((_,i)=>baralho[i%baralho.length]),
+    eliminado:false, campeao:false,
+  };
+  estado.simVel = 1; // Normal
+  jogarProximaFase();
+}
+function jogarProximaFase(){
+  const c=estado.campanha;
+  if(c.faseIdx>=FASES.length){ finalizarCampanha(); return; }
+  const fase=FASES[c.faseIdx];
+  const adv=c.advs[c.faseIdx];
+  // pré-gera resultado e eventos
+  let [gMeu,gAdv]=gerarPlacar(c.minha, adv.forca);
+  let penaltis=null;
+  if(fase.tipo==="mata" && gMeu===gAdv){
+    const venceuPen = Math.random() < c.minha/(c.minha+adv.forca);
+    penaltis = venceuPen ? "meu" : "adv";
+  }
+  const eventos=[];
+  const minutos=()=>1+Math.floor(Math.random()*89);
+  for(let i=0;i<gMeu;i++) eventos.push({min:minutos(),lado:"meu",quem:escolherArtilheiro()});
+  for(let i=0;i<gAdv;i++) eventos.push({min:minutos(),lado:"adv",quem:rand(adv.estrelas||[adv.nome])});
+  eventos.sort((a,b)=>a.min-b.min);
+  estado.sim={fase,adv,gMeu,gAdv,penaltis,eventos,min:0,pIdx:0,mMeu:0,mAdv:0,timer:null,rodando:false};
+  abrirTelaJogo();
+}
+function abrirTelaJogo(){
+  const s=estado.sim;
+  $("#jogo-fase").textContent=`Libertadores • ${s.fase.nome}`;
+  $("#jogo-fora-nome").textContent=`${s.adv.nome} (${s.adv.pais})`;
+  $("#jogo-forca-casa").textContent="força "+Math.round(estado.campanha.minha);
+  $("#jogo-forca-fora").textContent="força "+s.adv.forca;
+  $("#g-casa").textContent="0"; $("#g-fora").textContent="0";
+  $("#jogo-min").textContent="0"; $("#tempo-fill").style.width="0%";
+  $("#jogo-eventos").innerHTML="";
+  $("#btn-prox-jogo").classList.add("hide");
+  renderVelocidades();
+  mostrar("tela-jogo");
+  iniciarTimer();
+}
+function renderVelocidades(){
+  const cont=$("#jogo-velocidades"); cont.innerHTML="";
+  VELOCIDADES.forEach((v,i)=>{
+    const c=document.createElement("div");
+    c.className="vel"+(i===estado.simVel?" sel":"");
+    c.textContent=v.nome;
+    c.onclick=()=>{
+      estado.simVel=i;
+      [...cont.children].forEach(x=>x.classList.remove("sel"));
+      c.classList.add("sel");
+      if(v.ms===0){ pularParaFim(); }
+      else if(!estado.sim.rodando){ iniciarTimer(); }
+      else { reiniciarTimer(); }
+    };
+    cont.appendChild(c);
+  });
+}
+function iniciarTimer(){
+  const v=VELOCIDADES[estado.simVel];
+  if(v.ms===0){ pularParaFim(); return; }
+  estado.sim.rodando=true;
+  estado.sim.timer=setInterval(tickMinuto, v.ms);
+}
+function reiniciarTimer(){
+  clearInterval(estado.sim.timer);
+  iniciarTimer();
+}
+function tickMinuto(){
+  const s=estado.sim;
+  s.min++;
+  $("#jogo-min").textContent=s.min;
+  $("#tempo-fill").style.width=(s.min/90*100)+"%";
+  while(s.pIdx<s.eventos.length && s.eventos[s.pIdx].min<=s.min){
+    aplicarEvento(s.eventos[s.pIdx]); s.pIdx++;
+  }
+  if(s.min>=90){ clearInterval(s.timer); s.rodando=false; fimDePartida(); }
+}
+function pularParaFim(){
+  const s=estado.sim;
+  clearInterval(s.timer); s.rodando=false;
+  while(s.pIdx<s.eventos.length){ aplicarEvento(s.eventos[s.pIdx]); s.pIdx++; }
+  s.min=90; $("#jogo-min").textContent=90; $("#tempo-fill").style.width="100%";
+  fimDePartida();
+}
+function aplicarEvento(ev){
+  const s=estado.sim;
+  if(ev.lado==="meu"){ s.mMeu++; $("#g-casa").textContent=s.mMeu; }
+  else { s.mAdv++; $("#g-fora").textContent=s.mAdv; }
+  const div=document.createElement("div");
+  div.className="ev "+(ev.lado==="meu"?"gol-meu":"gol-adv");
+  const lado=ev.lado==="meu"?"⚽ Inter":"⚽ "+s.adv.nome;
+  div.innerHTML=`<span class="min">${ev.min}'</span> <b>${lado}</b> — ${ev.quem}`;
+  $("#jogo-eventos").appendChild(div);
+  $("#jogo-eventos").scrollTop=$("#jogo-eventos").scrollHeight;
+}
+function fimDePartida(){
+  const s=estado.sim, c=estado.campanha;
+  // decisão por pênaltis no mata-mata empatado
+  let detalhe="";
+  if(s.penaltis){
+    const div=document.createElement("div");
+    div.className="ev";
+    const vMeu = s.penaltis==="meu";
+    div.innerHTML=`<span class="min">PÊN</span> <b>Pênaltis:</b> ${vMeu?"Inter avança":s.adv.nome+" avança"}`;
+    $("#jogo-eventos").appendChild(div);
+    detalhe=" (pên)";
+  }
+  // registra
+  const venceuMata = s.penaltis ? s.penaltis==="meu" : s.gMeu>s.gAdv;
+  c.historico.push({fase:s.fase.nome, adv:s.adv, gMeu:s.gMeu, gAdv:s.gAdv, detalhe});
+  if(s.fase.tipo==="grupo"){
+    c.pontos += s.gMeu>s.gAdv?3:(s.gMeu===s.gAdv?1:0);
+  }
+  // botão próximo
+  const bt=$("#btn-prox-jogo"); bt.classList.remove("hide");
+  // define avanço
+  if(s.fase.tipo==="grupo" && c.faseIdx===2){
+    if(c.pontos<4){ c.eliminado=true; bt.textContent="Ver resultado ➜";
+      bt.onclick=finalizarCampanha; return; }
+  }
+  if(s.fase.tipo==="mata" && !venceuMata){
+    c.eliminado=true; bt.textContent="Ver resultado ➜";
+    bt.onclick=finalizarCampanha; return; }
+  if(c.faseIdx===FASES.length-1 && venceuMata){
+    c.campeao=true; bt.textContent="Erguer a taça 🏆";
+    bt.onclick=finalizarCampanha; return; }
+  bt.textContent="Próximo jogo ➜";
+  bt.onclick=()=>{ c.faseIdx++; jogarProximaFase(); };
+}
+function finalizarCampanha(){
+  const c=estado.campanha;
+  const lista=$("#lista-partidas"); lista.innerHTML="";
+  c.historico.forEach(h=>{
+    const win=h.gMeu>h.gAdv, lose=h.gMeu<h.gAdv;
+    const div=document.createElement("div");
+    div.className="partida "+(win?"win":(lose?"lose":""));
+    div.innerHTML=`<div><div class="fase">${h.fase}</div><b>Internacional</b></div>
+      <div class="placar">${h.gMeu} x ${h.gAdv}${h.detalhe}</div>
+      <div class="adv"><div class="fase">${h.adv.pais} • força ${h.adv.forca}</div><b>${h.adv.nome}</b></div>`;
+    lista.appendChild(div);
+  });
+  // estatísticas (pênaltis NÃO contam como gol)
+  let v=0,e=0,d=0,gp=0,gc=0;
+  c.historico.forEach(h=>{
+    gp+=h.gMeu; gc+=h.gAdv;
+    if(h.gMeu>h.gAdv) v++; else if(h.gMeu<h.gAdv) d++; else e++;
+  });
+  const stats=[
+    {l:"Jogos", v:c.historico.length, cls:""},
+    {l:"Vitórias", v:v, cls:"v"},
+    {l:"Empates", v:e, cls:""},
+    {l:"Derrotas", v:d, cls:"d"},
+    {l:"Gols feitos", v:gp, cls:"gp"},
+    {l:"Gols sofridos", v:gc, cls:""},
+  ];
+  const sg=$("#stats-grid"); sg.innerHTML="";
+  stats.forEach(s=>{
+    const div=document.createElement("div");
+    div.className="stat "+s.cls;
+    div.innerHTML=`<b>${s.v}</b><span>${s.l}</span>`;
+    sg.appendChild(div);
+  });
+  // overall e tática
+  $("#ficha-over-num").textContent=Math.round(forcaMedia());
+  $("#ficha-form").textContent=estado.formacao;
+  $("#ficha-post").textContent=estado.postura;
+  // elenco
+  const eg=$("#elenco-grid"); eg.innerHTML="";
+  estado.slots.forEach(s=>{
+    const j=s.jogador; if(!j) return;
+    const div=document.createElement("div");
+    div.className="ply";
+    div.innerHTML=`<span class="pos-badge">${s.pos}</span>
+      <span class="ply-nome">${j.nome}</span>
+      <span class="ply-ovr">${j.forcaFinal}</span>`;
+    eg.appendChild(div);
+  });
+  const msg=$("#final-msg");
+  if(c.campeao){
+    msg.innerHTML="🏆🔴⚪<br>CAMPEÃO DA LIBERTADORES!<br><span style='font-size:1rem;opacity:.8'>Glória eterna ao Colorado!</span>";
+    msg.style.color="var(--dourado)";
+  }else if(c.eliminado){
+    const ult=c.historico[c.historico.length-1];
+    msg.innerHTML=`Eliminado na fase <b>${ult.fase}</b>.<br><span style='font-size:1rem;opacity:.7'>Monte um elenco mais forte!</span>`;
+    msg.style.color="var(--vermelho-claro)";
+  }else{
+    msg.innerHTML="Campanha encerrada.";
+  }
+  mostrar("tela-campanha");
+}
+
+/* ---------- RESET ---------- */
+function pararSim(){ if(estado.sim&&estado.sim.timer) clearInterval(estado.sim.timer); }
+$("#btn-reset").onclick=()=>{ pararSim(); mostrar("tela-config"); };
+$("#btn-novo").onclick=()=>{ pararSim(); mostrar("tela-config"); };
+
+/* INIT */
+initConfig();
+mostrar("tela-config");
+</script>
+</body>
+</html>
