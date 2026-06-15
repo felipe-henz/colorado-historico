@@ -1223,7 +1223,7 @@ const VELOCIDADES=[
 ];
 
 // mando de campo: bônus pra quem joga em casa (+3); fora, o adversário leva o bônus; final é neutro
-const BONUS_CASA=3;
+const BONUS_CASA=2;
 function forcasComMando(minha,dele,mando){
   if(mando==="casa") return [minha+BONUS_CASA, dele];
   if(mando==="fora") return [minha, dele+BONUS_CASA];
@@ -1272,9 +1272,8 @@ function jogarProximaFase(){
   if(c.faseIdx>=FASES.length){ finalizarCampanha(); return; }
   const fase=FASES[c.faseIdx];
   const adv=c.advs[c.faseIdx];
-  // mando de campo por fase (final é neutro)
-  const MANDOS=["casa","fora","casa","fora","casa","fora","neutro"];
-  const mando=MANDOS[c.faseIdx]||"neutro";
+  // mando de campo sorteado a cada jogo (a final é sempre neutra)
+  const mando = (c.faseIdx===FASES.length-1) ? "neutro" : (Math.random()<0.5?"casa":"fora");
   // pré-gera resultado e eventos
   let [gMeu,gAdv]=gerarPlacar(c.minha, adv.forca, mando);
   const precisaPen = (fase.tipo==="mata" && gMeu===gAdv); // empate no mata-mata -> pênaltis
