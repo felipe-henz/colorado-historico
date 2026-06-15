@@ -177,7 +177,7 @@
   .chance-txt{text-align:center;font-size:.85rem;opacity:.85;margin-top:5px}
   .chance-txt span{font-weight:800;color:var(--dourado)}
   /* disputa de pênaltis */
-  #penaltis-box{text-align:center;margin:10px 0 6px;padding:14px;
+  .penbox{text-align:center;margin:10px 0 6px;padding:14px;
     border-radius:14px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.12)}
   .pen-titulo{font-weight:800;letter-spacing:1px;color:var(--dourado);font-size:.95rem}
   .pen-placar{font-size:2.6rem;font-weight:800;display:flex;justify-content:center;
@@ -198,6 +198,7 @@
   .relogio{text-align:center;font-size:1.1rem;font-weight:700;color:var(--verde)}
   .barra-tempo{height:6px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden;margin-top:6px}
   .barra-tempo i{display:block;height:100%;background:linear-gradient(90deg,var(--verde),var(--dourado));transition:.1s linear}
+  .jogo-card .eventos{max-height:none;overflow:visible;min-height:40px}
   .eventos{min-height:120px;max-height:200px;overflow-y:auto;margin:14px 0;
     display:flex;flex-direction:column;gap:6px}
   .ev{padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.05);
@@ -213,6 +214,14 @@
   .vel{padding:9px 14px;border-radius:10px;cursor:pointer;font-size:.85rem;
     border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);user-select:none}
   .vel.sel{background:var(--vermelho);border-color:var(--vermelho);font-weight:700}
+  .velocidades-bar{position:sticky;top:0;z-index:5;padding:8px 0 10px;
+    background:linear-gradient(180deg,#180609 70%,rgba(24,6,9,0));margin:-8px 0 4px}
+  #jogos-feed{display:flex;flex-direction:column;gap:16px}
+  .jogo-card{border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px;
+    background:rgba(0,0,0,.22);animation:surge .35s}
+  .jogo-card.encerrado{opacity:.92}
+  .jogo-sep{text-align:center;font-size:.7rem;letter-spacing:1px;text-transform:uppercase;
+    opacity:.5;margin:2px 0 -4px}
   .final-msg{text-align:center;padding:24px;font-size:1.4rem;font-weight:700}
   #card-capturavel{padding:10px;border-radius:16px;
     background:radial-gradient(circle at 50% 0%, #2a0810, #14060a 70%)}
@@ -314,34 +323,11 @@
     <button class="btn sec" id="btn-reset">Recomeçar</button>
   </section>
 
-  <!-- TELA 4: PARTIDA AO VIVO -->
+  <!-- TELA 4: PARTIDAS AO VIVO (feed contínuo) -->
   <section id="tela-jogo" class="card hide">
-    <div class="jogo-fase" id="jogo-fase"></div>
-    <div class="placar-wrap">
-      <div class="lado">
-        <div class="time-nome">🔴 Internacional</div>
-        <div class="time-forca" id="jogo-forca-casa"></div>
-      </div>
-      <div class="placar-grande"><span id="g-casa">0</span><i>x</i><span id="g-fora">0</span></div>
-      <div class="lado">
-        <div class="time-nome" id="jogo-fora-nome">—</div>
-        <div class="time-forca" id="jogo-forca-fora"></div>
-      </div>
-    </div>
-    <div class="relogio-wrap">
-      <div class="relogio"><span id="jogo-min">0</span>'</div>
-      <div class="barra-tempo"><i id="tempo-fill" style="width:0%"></i></div>
-    </div>
-    <div id="penaltis-box" class="hide">
-      <div class="pen-titulo">⚪🔴 DISPUTA DE PÊNALTIS</div>
-      <div class="pen-placar"><span id="pen-casa">0</span><i>x</i><span id="pen-fora">0</span></div>
-      <div class="pen-narra" id="pen-narra"></div>
-      <div class="pen-linha"><span class="pen-lab">Inter</span><div class="pen-bolas" id="pen-meu"></div></div>
-      <div class="pen-linha"><span class="pen-lab" id="pen-adv-nome">Adv</span><div class="pen-bolas" id="pen-adv"></div></div>
-    </div>
-    <div class="eventos" id="jogo-eventos"></div>
-    <div class="velocidades" id="jogo-velocidades"></div>
-    <button class="btn hide" id="btn-prox-jogo">Próximo jogo ➜</button>
+    <div class="velocidades-bar"><div class="velocidades" id="jogo-velocidades"></div></div>
+    <div id="jogos-feed"></div>
+    <button class="btn hide" id="btn-prox-jogo">Ver resultado da campanha ➜</button>
   </section>
 
   <!-- TELA 5: RESUMO DA CAMPANHA -->
@@ -1310,19 +1296,37 @@ function jogarProximaFase(){
   abrirTelaJogo();
 }
 function abrirTelaJogo(){
-  const s=estado.sim;
-  const mandoTxt={casa:"🏠 Inter joga em casa",fora:"✈️ Inter joga fora",neutro:"🏟️ Campo neutro"}[s.mando];
-  $("#jogo-fase").textContent=`Libertadores • ${s.fase.nome} • ${mandoTxt}`;
-  $("#jogo-fora-nome").textContent=`${bandeira(s.adv.pais)} ${s.adv.nome}`;
-  $("#jogo-forca-casa").textContent="força "+Math.round(estado.campanha.minha);
-  $("#jogo-forca-fora").textContent="força "+s.adv.forca;
-  $("#g-casa").textContent="0"; $("#g-fora").textContent="0";
-  $("#jogo-min").textContent="0"; $("#tempo-fill").style.width="0%";
-  $("#jogo-eventos").innerHTML="";
-  $("#penaltis-box").classList.add("hide");
-  $("#btn-prox-jogo").classList.add("hide");
-  renderVelocidades();
-  mostrar("tela-jogo");
+  const s=estado.sim, c=estado.campanha;
+  if(c.faseIdx===0){
+    $("#jogos-feed").innerHTML="";
+    $("#btn-prox-jogo").classList.add("hide");
+    renderVelocidades();
+    mostrar("tela-jogo");
+  }
+  const mandoTxt={casa:"🏠 Inter em casa",fora:"✈️ Inter joga fora",neutro:"🏟️ Campo neutro"}[s.mando];
+  const card=document.createElement("div"); card.className="jogo-card";
+  card.innerHTML=`
+    <div class="jogo-fase">Libertadores • ${s.fase.nome} • ${mandoTxt}</div>
+    <div class="placar-wrap">
+      <div class="lado"><div class="time-nome">🔴 Internacional</div><div class="time-forca">força ${Math.round(c.minha)}</div></div>
+      <div class="placar-grande"><span class="gc">0</span><i>x</i><span class="gf">0</span></div>
+      <div class="lado"><div class="time-nome">${bandeira(s.adv.pais)} ${s.adv.nome}</div><div class="time-forca">força ${s.adv.forca}</div></div>
+    </div>
+    <div class="relogio-wrap"><div class="relogio"><span class="mn">0</span>'</div>
+      <div class="barra-tempo"><i class="fill" style="width:0%"></i></div></div>
+    <div class="penbox hide">
+      <div class="pen-titulo">⚪🔴 DISPUTA DE PÊNALTIS</div>
+      <div class="pen-placar"><span class="pc">0</span><i>x</i><span class="pf">0</span></div>
+      <div class="pen-narra narra"></div>
+      <div class="pen-linha"><span class="pen-lab">Inter</span><div class="pen-bolas pmeu"></div></div>
+      <div class="pen-linha"><span class="pen-lab">${s.adv.nome}</span><div class="pen-bolas padv"></div></div>
+    </div>
+    <div class="eventos evs"></div>`;
+  $("#jogos-feed").appendChild(card);
+  const q=sel=>card.querySelector(sel);
+  s.el={card, gc:q(".gc"), gf:q(".gf"), mn:q(".mn"), fill:q(".fill"), evs:q(".evs"),
+    penBox:q(".penbox"), pc:q(".pc"), pf:q(".pf"), narra:q(".narra"), pmeu:q(".pmeu"), padv:q(".padv")};
+  card.scrollIntoView({behavior:"smooth",block:"start"});
   iniciarTimer();
 }
 function renderVelocidades(){
@@ -1335,7 +1339,7 @@ function renderVelocidades(){
       estado.simVel=i;
       [...cont.children].forEach(x=>x.classList.remove("sel"));
       c.classList.add("sel");
-      if(estado.sim.min>=90) return;   // partida encerrada: só troca a velocidade
+      if(!estado.sim||estado.sim.min>=90) return; // só troca a velocidade
       if(v.ms===0){ pularParaFim(); }
       else if(!estado.sim.rodando){ iniciarTimer(); }
       else { reiniciarTimer(); }
@@ -1349,15 +1353,12 @@ function iniciarTimer(){
   estado.sim.rodando=true;
   estado.sim.timer=setInterval(tickMinuto, v.ms);
 }
-function reiniciarTimer(){
-  clearInterval(estado.sim.timer);
-  iniciarTimer();
-}
+function reiniciarTimer(){ clearInterval(estado.sim.timer); iniciarTimer(); }
 function tickMinuto(){
   const s=estado.sim;
   s.min++;
-  $("#jogo-min").textContent=s.min;
-  $("#tempo-fill").style.width=(s.min/90*100)+"%";
+  s.el.mn.textContent=s.min;
+  s.el.fill.style.width=(s.min/90*100)+"%";
   while(s.pIdx<s.eventos.length && s.eventos[s.pIdx].min<=s.min){
     aplicarEvento(s.eventos[s.pIdx]); s.pIdx++;
   }
@@ -1367,29 +1368,28 @@ function pularParaFim(){
   const s=estado.sim;
   clearInterval(s.timer); s.rodando=false;
   while(s.pIdx<s.eventos.length){ aplicarEvento(s.eventos[s.pIdx]); s.pIdx++; }
-  s.min=90; $("#jogo-min").textContent=90; $("#tempo-fill").style.width="100%";
+  s.min=90; s.el.mn.textContent=90; s.el.fill.style.width="100%";
   fimDePartida();
 }
 function aplicarEvento(ev){
-  const s=estado.sim, cont=$("#jogo-eventos");
+  const s=estado.sim;
   const div=document.createElement("div");
   if(ev.tipo==="lance"){
     div.className="ev lance";
     div.innerHTML=`<span class="min">${ev.min}'</span> ${ev.texto}`;
-    cont.appendChild(div); cont.scrollTop=cont.scrollHeight; return;
+    s.el.evs.appendChild(div); return;
   }
-  // gol
   if(ev.lado==="meu"){
-    s.mMeu++; $("#g-casa").textContent=s.mMeu;
+    s.mMeu++; s.el.gc.textContent=s.mMeu;
     const c=estado.campanha; if(c&&c.artilheiros) c.artilheiros[ev.quem]=(c.artilheiros[ev.quem]||0)+1;
-  } else { s.mAdv++; $("#g-fora").textContent=s.mAdv; }
+  } else { s.mAdv++; s.el.gf.textContent=s.mAdv; }
   div.className="ev "+(ev.lado==="meu"?"gol-meu":"gol-adv");
   const lado=ev.lado==="meu"?"⚽ Inter":"⚽ "+bandeira(s.adv.pais)+" "+s.adv.nome;
   div.innerHTML=`<span class="min">${ev.min}'</span> <b>${lado}</b> — ${ev.quem}`;
-  cont.appendChild(div); cont.scrollTop=cont.scrollHeight;
+  s.el.evs.appendChild(div);
 }
 function renderTabelaGrupo(tabela){
-  const cont=$("#jogo-eventos");
+  const cont=estado.sim.el.evs;
   const head=document.createElement("div"); head.className="ev";
   head.innerHTML="<b>📊 Classificação final do grupo</b> (2 avançam)";
   cont.appendChild(head);
@@ -1400,20 +1400,17 @@ function renderTabelaGrupo(tabela){
       — ${t.pts} pts · SG ${t.sg>=0?"+":""}${t.sg}`;
     cont.appendChild(div);
   });
-  cont.scrollTop=cont.scrollHeight;
 }
 // disputa de pênaltis animada (5 cobranças + morte súbita)
 function dispararPenaltis(onDone){
-  const s=estado.sim;
-  const box=$("#penaltis-box"); box.classList.remove("hide");
-  $("#pen-casa").textContent="0"; $("#pen-fora").textContent="0";
-  $("#pen-meu").innerHTML=""; $("#pen-adv").innerHTML="";
-  $("#pen-adv-nome").textContent=s.adv.nome;
+  const s=estado.sim, el=s.el;
+  el.penBox.classList.remove("hide");
+  el.pc.textContent="0"; el.pf.textContent="0";
+  el.pmeu.innerHTML=""; el.padv.innerHTML="";
   const [m,d]=forcasComMando(estado.campanha.minha, s.adv.forca, s.mando);
   const pMeu=Math.min(0.92,Math.max(0.55,0.75+(m-d)/220));
   const pAdv=Math.min(0.92,Math.max(0.55,0.75-(m-d)/220));
   const st={meu:0,adv:0,nMeu:0,nAdv:0,vez:"meu",iMeu:0,iAdv:0};
-  // ordem de cobradores do Inter (atacantes e meias primeiro)
   const pesoCob={CA:5,MEI:5,PE:4,PD:4,ME:3,MD:3,MC:3,VOL:2,LD:2,LE:2,ZAG:1,GOL:0};
   const cobMeu=estado.slots.filter(x=>x.jogador)
     .map(x=>({nome:x.jogador.nome,w:pesoCob[x.pos]||1}))
@@ -1425,13 +1422,12 @@ function dispararPenaltis(onDone){
     const b=document.createElement("div");
     b.className="pen-bola "+(fez?"gol":"erro");
     b.textContent=fez?"⚽":"✖";
-    $("#"+cont).appendChild(b);
+    cont.appendChild(b);
   }
   function narra(nome,fez){
     const erros=["DEFENDEU! 🧤","PRA FORA! ❌","NA TRAVE! 🥅"];
-    const n=$("#pen-narra");
-    n.textContent=nome+(fez?": GOL! ⚽":": "+rand(erros));
-    n.style.color=fez?"var(--verde)":"var(--vermelho-claro)";
+    el.narra.textContent=nome+(fez?": GOL! ⚽":": "+rand(erros));
+    el.narra.style.color=fez?"var(--verde)":"var(--vermelho-claro)";
   }
   function decidido(){
     const restMeu=Math.max(0,5-st.nMeu), restAdv=Math.max(0,5-st.nAdv);
@@ -1447,8 +1443,8 @@ function dispararPenaltis(onDone){
     const ehMeu=st.vez==="meu";
     const fez=Math.random()<(ehMeu?pMeu:pAdv);
     let nome;
-    if(ehMeu){ nome=cobMeu[st.iMeu++%cobMeu.length]||"Inter"; if(fez)st.meu++; st.nMeu++; bola("pen-meu",fez); $("#pen-casa").textContent=st.meu; }
-    else { nome=cobAdv[st.iAdv++%cobAdv.length]; if(fez)st.adv++; st.nAdv++; bola("pen-adv",fez); $("#pen-fora").textContent=st.adv; }
+    if(ehMeu){ nome=cobMeu[st.iMeu++%cobMeu.length]||"Inter"; if(fez)st.meu++; st.nMeu++; bola(el.pmeu,fez); el.pc.textContent=st.meu; }
+    else { nome=cobAdv[st.iAdv++%cobAdv.length]; if(fez)st.adv++; st.nAdv++; bola(el.padv,fez); el.pf.textContent=st.adv; }
     narra(nome,fez);
     st.vez=ehMeu?"adv":"meu";
     const dec=decidido();
@@ -1469,14 +1465,12 @@ function resolverFim(){
   const s=estado.sim, c=estado.campanha;
   let detalhe="";
   if(s.penaltis){
-    const div=document.createElement("div");
-    div.className="ev";
+    const div=document.createElement("div"); div.className="ev";
     const vMeu = s.penaltis==="meu";
     div.innerHTML=`<span class="min">PÊN</span> <b>Pênaltis (${s.penPlacar}):</b> ${vMeu?"Inter avança":s.adv.nome+" avança"}`;
-    $("#jogo-eventos").appendChild(div);
+    s.el.evs.appendChild(div);
     detalhe=" (pên "+s.penPlacar+")";
   }
-  // registra
   const venceuMata = s.penaltis ? s.penaltis==="meu" : s.gMeu>s.gAdv;
   c.historico.push({fase:s.fase.nome, adv:s.adv, gMeu:s.gMeu, gAdv:s.gAdv, detalhe});
   if(s.fase.tipo==="grupo"){
@@ -1487,11 +1481,8 @@ function resolverFim(){
     g.sg  += s.gAdv-s.gMeu;
     c.pontos = c.interGrupo.pts;
   }
-  // botão próximo
-  const bt=$("#btn-prox-jogo"); bt.classList.remove("hide");
   // fim da fase de grupos: completa a tabela e classifica os 2 primeiros
   if(s.fase.tipo==="grupo" && c.faseIdx===2){
-    // jogos entre os outros 3 do grupo
     [[0,1],[0,2],[1,2]].forEach(([i,j])=>{
       const A=c.grupo[i], B=c.grupo[j];
       const [ga,gb]=gerarPlacarNeutro(A.clube.forca, B.clube.forca);
@@ -1501,20 +1492,20 @@ function resolverFim(){
     const tabela=[{nome:"Internacional", pts:c.interGrupo.pts, sg:c.interGrupo.sg, inter:true},
       ...c.grupo.map(g=>({nome:g.clube.nome, pts:g.pts, sg:g.sg, inter:false}))];
     tabela.sort((a,b)=> b.pts-a.pts || b.sg-a.sg);
-    const pos=tabela.findIndex(t=>t.inter)+1;
-    c.grupoPos=pos;
+    c.grupoPos=tabela.findIndex(t=>t.inter)+1;
     renderTabelaGrupo(tabela);
-    if(pos>2){ c.eliminado=true; bt.textContent="Ver resultado ➜";
-      bt.onclick=finalizarCampanha; return; }
+    if(c.grupoPos>2) c.eliminado=true;
   }
-  if(s.fase.tipo==="mata" && !venceuMata){
-    c.eliminado=true; bt.textContent="Ver resultado ➜";
-    bt.onclick=finalizarCampanha; return; }
-  if(c.faseIdx===FASES.length-1 && venceuMata){
-    c.campeao=true; bt.textContent="Erguer a taça 🏆";
-    bt.onclick=finalizarCampanha; return; }
-  bt.textContent="Próximo jogo ➜";
-  bt.onclick=()=>{ c.faseIdx++; jogarProximaFase(); };
+  if(!c.eliminado && s.fase.tipo==="mata" && !venceuMata) c.eliminado=true;
+  if(!c.eliminado && c.faseIdx===FASES.length-1 && venceuMata) c.campeao=true;
+  s.el.card.classList.add("encerrado");
+  // auto-avança: começa o próximo jogo embaixo (ou fecha a campanha)
+  const pausa=[1400,1000,650,200][estado.simVel] ?? 1000;
+  if(c.eliminado || c.campeao){
+    setTimeout(()=>{ if(estado.campanha===c) finalizarCampanha(); }, pausa);
+  }else{
+    setTimeout(()=>{ if(estado.campanha===c){ c.faseIdx++; jogarProximaFase(); } }, pausa);
+  }
 }
 function finalizarCampanha(){
   const c=estado.campanha;
@@ -1587,7 +1578,7 @@ function finalizarCampanha(){
 }
 
 /* ---------- RESET ---------- */
-function pararSim(){ if(estado.sim&&estado.sim.timer) clearInterval(estado.sim.timer); }
+function pararSim(){ if(estado.sim&&estado.sim.timer) clearInterval(estado.sim.timer); estado.campanha=null; }
 $("#btn-reset").onclick=()=>{ pararSim(); mostrar("tela-config"); };
 $("#btn-novo").onclick=()=>{ pararSim(); mostrar("tela-config"); };
 
