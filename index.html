@@ -183,6 +183,8 @@
   .pen-placar{font-size:2.6rem;font-weight:800;display:flex;justify-content:center;
     align-items:center;gap:12px;margin:6px 0 12px}
   .pen-placar i{font-size:1.1rem;opacity:.5;font-style:normal}
+  .pen-narra{min-height:20px;font-size:.9rem;font-weight:700;margin:-4px 0 10px;
+    color:var(--txt);animation:surge .2s}
   .pen-linha{display:flex;align-items:center;gap:10px;margin:6px 0}
   .pen-lab{width:56px;text-align:right;font-size:.8rem;font-weight:700;opacity:.85;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -330,6 +332,7 @@
     <div id="penaltis-box" class="hide">
       <div class="pen-titulo">⚪🔴 DISPUTA DE PÊNALTIS</div>
       <div class="pen-placar"><span id="pen-casa">0</span><i>x</i><span id="pen-fora">0</span></div>
+      <div class="pen-narra" id="pen-narra"></div>
       <div class="pen-linha"><span class="pen-lab">Inter</span><div class="pen-bolas" id="pen-meu"></div></div>
       <div class="pen-linha"><span class="pen-lab" id="pen-adv-nome">Adv</span><div class="pen-bolas" id="pen-adv"></div></div>
     </div>
@@ -1219,11 +1222,17 @@ const VELOCIDADES=[
   {nome:"Instantâneo", ms:0},
 ];
 
-// fator casa / raça colorada: dá um empurrão ao Inter
-function forcaEfetiva(minha){ return minha + 2; }
-function gerarPlacar(minha,dele){
+// mando de campo: bônus pra quem joga em casa (+3); fora, o adversário leva o bônus; final é neutro
+const BONUS_CASA=3;
+function forcasComMando(minha,dele,mando){
+  if(mando==="casa") return [minha+BONUS_CASA, dele];
+  if(mando==="fora") return [minha, dele+BONUS_CASA];
+  return [minha, dele]; // neutro
+}
+function gerarPlacar(minha,dele,mando){
+  const [m,d]=forcasComMando(minha,dele,mando);
   const p=POSTURAS[estado.postura];
-  const diff=(forcaEfetiva(minha)-dele)/9;   // peso da diferença de força
+  const diff=(m-d)/9;   // peso da diferença de força
   const golsMeu=Math.max(0,Math.round(1.4+diff+p.atk+ (Math.random()*2-1)));
   const golsDel=Math.max(0,Math.round(1.4-diff+p.sofridos+ (Math.random()*2-1)));
   return [golsMeu,golsDel];
@@ -1263,21 +1272,25 @@ function jogarProximaFase(){
   if(c.faseIdx>=FASES.length){ finalizarCampanha(); return; }
   const fase=FASES[c.faseIdx];
   const adv=c.advs[c.faseIdx];
+  // mando de campo por fase (final é neutro)
+  const MANDOS=["casa","fora","casa","fora","casa","fora","neutro"];
+  const mando=MANDOS[c.faseIdx]||"neutro";
   // pré-gera resultado e eventos
-  let [gMeu,gAdv]=gerarPlacar(c.minha, adv.forca);
+  let [gMeu,gAdv]=gerarPlacar(c.minha, adv.forca, mando);
   const precisaPen = (fase.tipo==="mata" && gMeu===gAdv); // empate no mata-mata -> pênaltis
   const eventos=[];
   const minutos=()=>1+Math.floor(Math.random()*89);
   for(let i=0;i<gMeu;i++) eventos.push({min:minutos(),lado:"meu",quem:escolherArtilheiro()});
   for(let i=0;i<gAdv;i++) eventos.push({min:minutos(),lado:"adv",quem:rand(adv.estrelas||[adv.nome])});
   eventos.sort((a,b)=>a.min-b.min);
-  estado.sim={fase,adv,gMeu,gAdv,penaltis:null,precisaPen,penFeito:false,penPlacar:"",
+  estado.sim={fase,adv,mando,gMeu,gAdv,penaltis:null,precisaPen,penFeito:false,penPlacar:"",
     eventos,min:0,pIdx:0,mMeu:0,mAdv:0,timer:null,rodando:false};
   abrirTelaJogo();
 }
 function abrirTelaJogo(){
   const s=estado.sim;
-  $("#jogo-fase").textContent=`Libertadores • ${s.fase.nome}`;
+  const mandoTxt={casa:"🏠 Inter joga em casa",fora:"✈️ Inter joga fora",neutro:"🏟️ Campo neutro"}[s.mando];
+  $("#jogo-fase").textContent=`Libertadores • ${s.fase.nome} • ${mandoTxt}`;
   $("#jogo-fora-nome").textContent=`${s.adv.nome} (${s.adv.pais})`;
   $("#jogo-forca-casa").textContent="força "+Math.round(estado.campanha.minha);
   $("#jogo-forca-fora").textContent="força "+s.adv.forca;
@@ -1367,10 +1380,16 @@ function dispararPenaltis(onDone){
   $("#pen-casa").textContent="0"; $("#pen-fora").textContent="0";
   $("#pen-meu").innerHTML=""; $("#pen-adv").innerHTML="";
   $("#pen-adv-nome").textContent=s.adv.nome;
-  const m=forcaEfetiva(estado.campanha.minha), d=s.adv.forca;
+  const [m,d]=forcasComMando(estado.campanha.minha, s.adv.forca, s.mando);
   const pMeu=Math.min(0.92,Math.max(0.55,0.75+(m-d)/220));
   const pAdv=Math.min(0.92,Math.max(0.55,0.75-(m-d)/220));
-  const st={meu:0,adv:0,nMeu:0,nAdv:0,vez:"meu"};
+  const st={meu:0,adv:0,nMeu:0,nAdv:0,vez:"meu",iMeu:0,iAdv:0};
+  // ordem de cobradores do Inter (atacantes e meias primeiro)
+  const pesoCob={CA:5,MEI:5,PE:4,PD:4,ME:3,MD:3,MC:3,VOL:2,LD:2,LE:2,ZAG:1,GOL:0};
+  const cobMeu=estado.slots.filter(x=>x.jogador)
+    .map(x=>({nome:x.jogador.nome,w:pesoCob[x.pos]||1}))
+    .sort((a,b)=>b.w-a.w).map(x=>x.nome);
+  const cobAdv=(s.adv.estrelas&&s.adv.estrelas.length)?s.adv.estrelas:[s.adv.nome];
   const PEN_MS=[800,500,250,0];
   const ms=PEN_MS[estado.simVel]||500;
   function bola(cont,fez){
@@ -1378,6 +1397,12 @@ function dispararPenaltis(onDone){
     b.className="pen-bola "+(fez?"gol":"erro");
     b.textContent=fez?"⚽":"✖";
     $("#"+cont).appendChild(b);
+  }
+  function narra(nome,fez){
+    const erros=["DEFENDEU! 🧤","PRA FORA! ❌","NA TRAVE! 🥅"];
+    const n=$("#pen-narra");
+    n.textContent=nome+(fez?": GOL! ⚽":": "+rand(erros));
+    n.style.color=fez?"var(--verde)":"var(--vermelho-claro)";
   }
   function decidido(){
     const restMeu=Math.max(0,5-st.nMeu), restAdv=Math.max(0,5-st.nAdv);
@@ -1392,8 +1417,10 @@ function dispararPenaltis(onDone){
   function chutar(){
     const ehMeu=st.vez==="meu";
     const fez=Math.random()<(ehMeu?pMeu:pAdv);
-    if(ehMeu){ if(fez)st.meu++; st.nMeu++; bola("pen-meu",fez); $("#pen-casa").textContent=st.meu; }
-    else { if(fez)st.adv++; st.nAdv++; bola("pen-adv",fez); $("#pen-fora").textContent=st.adv; }
+    let nome;
+    if(ehMeu){ nome=cobMeu[st.iMeu++%cobMeu.length]||"Inter"; if(fez)st.meu++; st.nMeu++; bola("pen-meu",fez); $("#pen-casa").textContent=st.meu; }
+    else { nome=cobAdv[st.iAdv++%cobAdv.length]; if(fez)st.adv++; st.nAdv++; bola("pen-adv",fez); $("#pen-fora").textContent=st.adv; }
+    narra(nome,fez);
     st.vez=ehMeu?"adv":"meu";
     const dec=decidido();
     if(dec){ s.penaltis=dec; s.penPlacar=st.meu+"x"+st.adv; setTimeout(onDone, ms||300); return; }
