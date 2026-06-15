@@ -176,6 +176,22 @@
   .chance-barra b{background:rgba(255,255,255,.18);transition:.3s}
   .chance-txt{text-align:center;font-size:.85rem;opacity:.85;margin-top:5px}
   .chance-txt span{font-weight:800;color:var(--dourado)}
+  /* disputa de pênaltis */
+  #penaltis-box{text-align:center;margin:10px 0 6px;padding:14px;
+    border-radius:14px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.12)}
+  .pen-titulo{font-weight:800;letter-spacing:1px;color:var(--dourado);font-size:.95rem}
+  .pen-placar{font-size:2.6rem;font-weight:800;display:flex;justify-content:center;
+    align-items:center;gap:12px;margin:6px 0 12px}
+  .pen-placar i{font-size:1.1rem;opacity:.5;font-style:normal}
+  .pen-linha{display:flex;align-items:center;gap:10px;margin:6px 0}
+  .pen-lab{width:56px;text-align:right;font-size:.8rem;font-weight:700;opacity:.85;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pen-bolas{display:flex;gap:5px;flex-wrap:wrap}
+  .pen-bola{width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.3);
+    display:flex;align-items:center;justify-content:center;font-size:.7rem;
+    animation:surge .25s}
+  .pen-bola.gol{background:var(--verde);border-color:var(--verde)}
+  .pen-bola.erro{background:var(--vermelho-esc);border-color:var(--vermelho-claro)}
   .relogio-wrap{margin:16px 0 6px}
   .relogio{text-align:center;font-size:1.1rem;font-weight:700;color:var(--verde)}
   .barra-tempo{height:6px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden;margin-top:6px}
@@ -307,15 +323,15 @@
         <div class="time-forca" id="jogo-forca-fora"></div>
       </div>
     </div>
-    <div class="chance-wrap">
-      <div class="chance-barra">
-        <i id="chance-meu" style="width:50%"></i><b id="chance-adv" style="width:50%"></b>
-      </div>
-      <div class="chance-txt">Chance de vitória: <span id="jogo-chance">—</span></div>
-    </div>
     <div class="relogio-wrap">
       <div class="relogio"><span id="jogo-min">0</span>'</div>
       <div class="barra-tempo"><i id="tempo-fill" style="width:0%"></i></div>
+    </div>
+    <div id="penaltis-box" class="hide">
+      <div class="pen-titulo">⚪🔴 DISPUTA DE PÊNALTIS</div>
+      <div class="pen-placar"><span id="pen-casa">0</span><i>x</i><span id="pen-fora">0</span></div>
+      <div class="pen-linha"><span class="pen-lab">Inter</span><div class="pen-bolas" id="pen-meu"></div></div>
+      <div class="pen-linha"><span class="pen-lab" id="pen-adv-nome">Adv</span><div class="pen-bolas" id="pen-adv"></div></div>
     </div>
     <div class="eventos" id="jogo-eventos"></div>
     <div class="velocidades" id="jogo-velocidades"></div>
@@ -413,7 +429,7 @@ const TIMES = [
     {nome:"Amarildo", pos:["MEI","CA"], forca:76},
     {nome:"Adãozinho", pos:["PD","PE"], forca:75},
     {nome:"Nílson", pos:["CA","PE"], forca:81},
-    {nome:"Jardel", pos:["CA"], forca:85},
+    {nome:"Jardel", pos:["CA"], forca:87},
     {nome:"Marquinhos Santos", pos:["MEI","MC"], forca:74},
   ]},
   { nome:"2006", ano:"Campeão do Mundo", jogadores:[
@@ -432,7 +448,7 @@ const TIMES = [
     {nome:"Jorge Wagner", pos:["MEI","ME"], forca:81},
     {nome:"Michel", pos:["MEI","MC"], forca:76},
     {nome:"Élder Granja", pos:["PE","MEI"], forca:74},
-    {nome:"Rafael Sóbis", pos:["CA","MEI"], forca:84},
+    {nome:"Rafael Sóbis", pos:["CA","MEI"], forca:85},
     {nome:"Fernandão", pos:["CA","MEI"], forca:90},
     {nome:"Luizão", pos:["CA"], forca:82},
     {nome:"Adriano Gabiru", pos:["CA","PD"], forca:77},
@@ -454,7 +470,7 @@ const TIMES = [
     {nome:"Jorge Wagner", pos:["MEI","ME"], forca:80},
     {nome:"Taison", pos:["PE","MEI","PD"], forca:80},
     {nome:"Nilmar", pos:["CA","PE"], forca:83},
-    {nome:"Alexandre Pato", pos:["CA","MEI"], forca:82},
+    {nome:"Alexandre Pato", pos:["CA","MEI"], forca:83},
   ]},
   { nome:"2010", ano:"Bi da Libertadores", jogadores:[
     {nome:"Renan", pos:["GOL"], forca:80},
@@ -473,8 +489,8 @@ const TIMES = [
     {nome:"Taison", pos:["PE","MEI","PD"], forca:80},
     {nome:"Pinga", pos:["PD","CA"], forca:75},
     {nome:"Alecsandro", pos:["CA"], forca:82},
-    {nome:"Rafael Sóbis", pos:["CA","MEI"], forca:83},
-    {nome:"Leandro Damião", pos:["CA"], forca:83},
+    {nome:"Rafael Sóbis", pos:["CA","MEI"], forca:84},
+    {nome:"Leandro Damião", pos:["CA"], forca:85},
   ]},
   { nome:"2015", ano:"Campeonato Brasileiro", jogadores:[
     {nome:"Alisson", pos:["GOL"], forca:88},
@@ -528,21 +544,21 @@ const TIMES = [
     {nome:"Renê", pos:["LE"], forca:76},
     {nome:"Rodrigo Moledo", pos:["ZAG"], forca:79},
     {nome:"Cuesta", pos:["ZAG"], forca:79},
-    {nome:"Vitão", pos:["ZAG"], forca:80},
+    {nome:"Vitão", pos:["ZAG"], forca:81},
     {nome:"Mercado", pos:["ZAG","LD"], forca:79},
     {nome:"Bruno Méndez", pos:["ZAG","LD"], forca:77},
-    {nome:"Edenílson", pos:["VOL","MC"], forca:81},
+    {nome:"Edenílson", pos:["VOL","MC"], forca:83},
     {nome:"Rodrigo Dourado", pos:["VOL"], forca:78},
     {nome:"Patrick", pos:["MEI","MC"], forca:80},
     {nome:"Carlos De Pena", pos:["MEI","ME"], forca:78},
     {nome:"Maurício", pos:["MEI","MC"], forca:78},
-    {nome:"Alan Patrick", pos:["MEI","MC"], forca:83},
+    {nome:"Alan Patrick", pos:["MEI","MC"], forca:85},
     {nome:"D'Alessandro", pos:["MEI","MC","PE"], forca:85},
     {nome:"Wanderson", pos:["PE","PD"], forca:80},
     {nome:"Taison", pos:["PE","MEI","PD"], forca:82},
-    {nome:"Guerrero", pos:["CA"], forca:83},
+    {nome:"Guerrero", pos:["CA"], forca:84},
     {nome:"Yuri Alberto", pos:["CA"], forca:81},
-    {nome:"Thiago Galhardo", pos:["MEI","CA"], forca:80},
+    {nome:"Thiago Galhardo", pos:["MEI","CA"], forca:82},
   ]},
   { nome:"2024 / 2025", ano:"Era Roger Machado", jogadores:[
     {nome:"Rochet", pos:["GOL"], forca:85},
@@ -551,7 +567,7 @@ const TIMES = [
     {nome:"Wesley", pos:["PD","LD"], forca:77},
     {nome:"Bernabei", pos:["LE"], forca:78},
     {nome:"Renê", pos:["LE"], forca:75},
-    {nome:"Vitão", pos:["ZAG"], forca:80},
+    {nome:"Vitão", pos:["ZAG"], forca:81},
     {nome:"Mercado", pos:["ZAG"], forca:78},
     {nome:"Rogel", pos:["ZAG"], forca:77},
     {nome:"Clayton Sampaio", pos:["ZAG"], forca:74},
@@ -560,7 +576,7 @@ const TIMES = [
     {nome:"Aránguiz", pos:["VOL","MC"], forca:79},
     {nome:"Bruno Henrique", pos:["VOL","MC"], forca:79},
     {nome:"Gabriel Carvalho", pos:["MEI","MC"], forca:74},
-    {nome:"Alan Patrick", pos:["MEI","MC"], forca:84},
+    {nome:"Alan Patrick", pos:["MEI","MC"], forca:86},
     {nome:"Wanderson", pos:["PE","PD"], forca:80},
     {nome:"Alario", pos:["CA"], forca:79},
     {nome:"Borré", pos:["CA"], forca:80},
@@ -602,7 +618,7 @@ const TIMES = [
     {nome:"Forlán", pos:["CA","MEI"], forca:85},
     {nome:"Jorge Henrique", pos:["PD","PE"], forca:76},
     {nome:"Scocco", pos:["CA","MEI"], forca:82},
-    {nome:"Leandro Damião", pos:["CA"], forca:84},
+    {nome:"Leandro Damião", pos:["CA"], forca:85},
     {nome:"Rafael Moura", pos:["CA"], forca:78},
   ]},
   { nome:"1940 — 1948", ano:"Rolo Compressor", jogadores:[
@@ -649,10 +665,10 @@ const TIMES = [
     {nome:"Tinga", pos:["VOL","MC","LD"], forca:81},
     {nome:"Oscar", pos:["MEI","MC"], forca:82},
     {nome:"D'Alessandro", pos:["MEI","MC","PE"], forca:90},
-    {nome:"Giuliano", pos:["MEI","MC"], forca:84},
+    {nome:"Giuliano", pos:["MEI","MC"], forca:85},
     {nome:"Andrezinho", pos:["MEI","MC"], forca:78},
     {nome:"Dellatorre", pos:["CA"], forca:74},
-    {nome:"Leandro Damião", pos:["CA"], forca:85},
+    {nome:"Leandro Damião", pos:["CA"], forca:87},
     {nome:"Jô", pos:["CA"], forca:79},
   ]},
   { nome:"2004", ano:"Tetracampeão Gaúcho", jogadores:[
@@ -665,7 +681,7 @@ const TIMES = [
     {nome:"Perdigão", pos:["VOL"], forca:75},
     {nome:"Jadílson", pos:["VOL","MC"], forca:74},
     {nome:"Alex", pos:["MEI","MC"], forca:80},
-    {nome:"Rafael Sóbis", pos:["CA","MEI"], forca:82},
+    {nome:"Rafael Sóbis", pos:["CA","MEI"], forca:83},
     {nome:"Fernandão", pos:["CA","MEI"], forca:87},
     {nome:"Nilmar", pos:["CA","PE"], forca:83},
     {nome:"Diego Souza", pos:["MEI","CA"], forca:78},
@@ -696,7 +712,7 @@ const TIMES = [
     {nome:"Uendel", pos:["LE"], forca:76},
     {nome:"Charles", pos:["VOL"], forca:76},
     {nome:"Rodrigo Dourado", pos:["VOL"], forca:77},
-    {nome:"Edenílson", pos:["VOL","MC"], forca:80},
+    {nome:"Edenílson", pos:["VOL","MC"], forca:81},
     {nome:"D'Alessandro", pos:["MEI","MC","PE"], forca:83},
     {nome:"Nico López", pos:["PE","CA","MEI"], forca:78},
     {nome:"William Pottker", pos:["CA"], forca:77},
@@ -714,8 +730,8 @@ const TIMES = [
     {nome:"Guiñazú", pos:["VOL","MC"], forca:83},
     {nome:"Alex", pos:["MEI","MC"], forca:80},
     {nome:"Iarley", pos:["MEI","MC"], forca:80},
-    {nome:"Alexandre Pato", pos:["CA","MEI"], forca:82},
-    {nome:"Rafael Sóbis", pos:["CA","MEI"], forca:84},
+    {nome:"Alexandre Pato", pos:["CA","MEI"], forca:83},
+    {nome:"Rafael Sóbis", pos:["CA","MEI"], forca:85},
     {nome:"Fernandão", pos:["CA","MEI"], forca:88},
     {nome:"Adriano Gabiru", pos:["CA","PD"], forca:77},
   ]},
@@ -726,12 +742,12 @@ const TIMES = [
     {nome:"Uendel", pos:["LE"], forca:75},
     {nome:"Rodrigo Moledo", pos:["ZAG"], forca:79},
     {nome:"Cuesta", pos:["ZAG"], forca:79},
-    {nome:"Edenílson", pos:["VOL","MC"], forca:81},
+    {nome:"Edenílson", pos:["VOL","MC"], forca:83},
     {nome:"Rodrigo Lindoso", pos:["VOL","MC"], forca:77},
     {nome:"Patrick", pos:["MEI","MC"], forca:80},
     {nome:"D'Alessandro", pos:["MEI","MC","PE"], forca:83},
     {nome:"Praxedes", pos:["MEI","MC"], forca:74},
-    {nome:"Thiago Galhardo", pos:["MEI","CA"], forca:82},
+    {nome:"Thiago Galhardo", pos:["MEI","CA"], forca:84},
     {nome:"Abel Hernández", pos:["CA"], forca:80},
     {nome:"Yuri Alberto", pos:["CA"], forca:78},
   ]},
@@ -961,6 +977,7 @@ $("#btn-iniciar").onclick=()=>{
   estado.rodada=0;
   estado.escolhidos=new Set();
   estado.jogadorSel=null; estado.troca=null;
+  estado.redrawUsado=false;   // 1 re-sorteio no JOGO TODO
   $("#dificuldade-tag").textContent =
     estado.dificuldade==="classico"?"Clássico":"Almanaque";
   mostrar("tela-draft");
@@ -988,7 +1005,6 @@ function podeColocar(j){
 function proximaRodada(){
   if(estado.slots.every(s=>s.jogador)){ montarTime(); return; }
   estado.rodada++;
-  estado.redrawUsado=false;
   estado.timeAtual = rand(TIMES);
   $("#rodada-num").textContent=estado.rodada;
   $("#prog").style.width=((estado.rodada-1)/11*100)+"%";
@@ -1020,8 +1036,8 @@ function renderJogadores(){
   bp.classList.remove("hide");
   bp.disabled=estado.redrawUsado;
   bp.textContent=estado.redrawUsado
-    ? "Sorteio já usado nesta rodada"
-    : "Não gostou? Sortear outro time (1x)";
+    ? "Re-sorteio já usado (1x no jogo todo)"
+    : "Não gostou? Sortear outro time (1x no jogo todo)";
 }
 // passo 1: jogador escolhido -> campo para colocar (verde=livre, dourado=trocar)
 function selecionarJogador(j){
@@ -1202,7 +1218,7 @@ const VELOCIDADES=[
 ];
 
 // fator casa / raça colorada: dá um empurrão ao Inter
-function forcaEfetiva(minha){ return minha + 3; }
+function forcaEfetiva(minha){ return minha + 2; }
 function gerarPlacar(minha,dele){
   const p=POSTURAS[estado.postura];
   const diff=(forcaEfetiva(minha)-dele)/9;   // peso da diferença de força
@@ -1210,16 +1226,12 @@ function gerarPlacar(minha,dele){
   const golsDel=Math.max(0,Math.round(1.4-diff+p.sofridos+ (Math.random()*2-1)));
   return [golsMeu,golsDel];
 }
-// estima a chance de vitória por simulação (mesma lógica do jogo)
-function chanceVitoria(minha,dele){
-  let v=0,e=0; const N=4000;
-  for(let i=0;i<N;i++){
-    const [a,b]=gerarPlacar(minha,dele);
-    if(a>b) v++; else if(a===b) e++;
-  }
-  // empate no mata-mata decide no pênalti (ponderado pela força)
-  const penMeu = forcaEfetiva(minha)/(forcaEfetiva(minha)+dele);
-  return (v + e*penMeu)/N;
+// placar neutro clube x clube (jogos do grupo entre os adversários)
+function gerarPlacarNeutro(fa,fb){
+  const diff=(fa-fb)/9;
+  const a=Math.max(0,Math.round(1.4+diff+ (Math.random()*2-1)));
+  const b=Math.max(0,Math.round(1.4-diff+ (Math.random()*2-1)));
+  return [a,b];
 }
 // artilheiro do Inter ponderado por posição ofensiva
 function escolherArtilheiro(){
@@ -1237,6 +1249,10 @@ function iniciarCampanha(){
     advs: FASES.map((_,i)=>baralho[i%baralho.length]),
     eliminado:false, campeao:false,
   };
+  const c=estado.campanha;
+  // grupo: Inter + 3 adversários das 3 primeiras fases
+  c.grupo = c.advs.slice(0,3).map(a=>({clube:a, pts:0, sg:0}));
+  c.interGrupo = {pts:0, sg:0};
   estado.simVel = 1; // Normal
   jogarProximaFase();
 }
@@ -1247,17 +1263,14 @@ function jogarProximaFase(){
   const adv=c.advs[c.faseIdx];
   // pré-gera resultado e eventos
   let [gMeu,gAdv]=gerarPlacar(c.minha, adv.forca);
-  let penaltis=null;
-  if(fase.tipo==="mata" && gMeu===gAdv){
-    const venceuPen = Math.random() < forcaEfetiva(c.minha)/(forcaEfetiva(c.minha)+adv.forca);
-    penaltis = venceuPen ? "meu" : "adv";
-  }
+  const precisaPen = (fase.tipo==="mata" && gMeu===gAdv); // empate no mata-mata -> pênaltis
   const eventos=[];
   const minutos=()=>1+Math.floor(Math.random()*89);
   for(let i=0;i<gMeu;i++) eventos.push({min:minutos(),lado:"meu",quem:escolherArtilheiro()});
   for(let i=0;i<gAdv;i++) eventos.push({min:minutos(),lado:"adv",quem:rand(adv.estrelas||[adv.nome])});
   eventos.sort((a,b)=>a.min-b.min);
-  estado.sim={fase,adv,gMeu,gAdv,penaltis,eventos,min:0,pIdx:0,mMeu:0,mAdv:0,timer:null,rodando:false};
+  estado.sim={fase,adv,gMeu,gAdv,penaltis:null,precisaPen,penFeito:false,penPlacar:"",
+    eventos,min:0,pIdx:0,mMeu:0,mAdv:0,timer:null,rodando:false};
   abrirTelaJogo();
 }
 function abrirTelaJogo(){
@@ -1266,14 +1279,10 @@ function abrirTelaJogo(){
   $("#jogo-fora-nome").textContent=`${s.adv.nome} (${s.adv.pais})`;
   $("#jogo-forca-casa").textContent="força "+Math.round(estado.campanha.minha);
   $("#jogo-forca-fora").textContent="força "+s.adv.forca;
-  const ch=chanceVitoria(estado.campanha.minha, s.adv.forca);
-  const pct=Math.round(ch*100);
-  $("#jogo-chance").textContent=pct+"%";
-  $("#chance-meu").style.width=pct+"%";
-  $("#chance-adv").style.width=(100-pct)+"%";
   $("#g-casa").textContent="0"; $("#g-fora").textContent="0";
   $("#jogo-min").textContent="0"; $("#tempo-fill").style.width="0%";
   $("#jogo-eventos").innerHTML="";
+  $("#penaltis-box").classList.add("hide");
   $("#btn-prox-jogo").classList.add("hide");
   renderVelocidades();
   mostrar("tela-jogo");
@@ -1289,6 +1298,7 @@ function renderVelocidades(){
       estado.simVel=i;
       [...cont.children].forEach(x=>x.classList.remove("sel"));
       c.classList.add("sel");
+      if(estado.sim.min>=90) return;   // partida encerrada: só troca a velocidade
       if(v.ms===0){ pularParaFim(); }
       else if(!estado.sim.rodando){ iniciarTimer(); }
       else { reiniciarTimer(); }
@@ -1334,29 +1344,109 @@ function aplicarEvento(ev){
   $("#jogo-eventos").appendChild(div);
   $("#jogo-eventos").scrollTop=$("#jogo-eventos").scrollHeight;
 }
+function renderTabelaGrupo(tabela){
+  const cont=$("#jogo-eventos");
+  const head=document.createElement("div"); head.className="ev";
+  head.innerHTML="<b>📊 Classificação final do grupo</b> (2 avançam)";
+  cont.appendChild(head);
+  tabela.forEach((t,i)=>{
+    const div=document.createElement("div");
+    div.className="ev"+(t.inter?" gol-meu":"");
+    div.innerHTML=`<span class="min">${i+1}º</span> ${i<2?"✅":"❌"} <b>${t.nome}</b>
+      — ${t.pts} pts · SG ${t.sg>=0?"+":""}${t.sg}`;
+    cont.appendChild(div);
+  });
+  cont.scrollTop=cont.scrollHeight;
+}
+// disputa de pênaltis animada (5 cobranças + morte súbita)
+function dispararPenaltis(onDone){
+  const s=estado.sim;
+  const box=$("#penaltis-box"); box.classList.remove("hide");
+  $("#pen-casa").textContent="0"; $("#pen-fora").textContent="0";
+  $("#pen-meu").innerHTML=""; $("#pen-adv").innerHTML="";
+  $("#pen-adv-nome").textContent=s.adv.nome;
+  const m=forcaEfetiva(estado.campanha.minha), d=s.adv.forca;
+  const pMeu=Math.min(0.92,Math.max(0.55,0.75+(m-d)/220));
+  const pAdv=Math.min(0.92,Math.max(0.55,0.75-(m-d)/220));
+  const st={meu:0,adv:0,nMeu:0,nAdv:0,vez:"meu"};
+  const PEN_MS=[800,500,250,0];
+  const ms=PEN_MS[estado.simVel]||500;
+  function bola(cont,fez){
+    const b=document.createElement("div");
+    b.className="pen-bola "+(fez?"gol":"erro");
+    b.textContent=fez?"⚽":"✖";
+    $("#"+cont).appendChild(b);
+  }
+  function decidido(){
+    const restMeu=Math.max(0,5-st.nMeu), restAdv=Math.max(0,5-st.nAdv);
+    if(st.nMeu<5||st.nAdv<5){
+      if(st.meu>st.adv+restAdv) return "meu";
+      if(st.adv>st.meu+restMeu) return "adv";
+      return null;
+    }
+    if(st.nMeu===st.nAdv && st.meu!==st.adv) return st.meu>st.adv?"meu":"adv";
+    return null;
+  }
+  function chutar(){
+    const ehMeu=st.vez==="meu";
+    const fez=Math.random()<(ehMeu?pMeu:pAdv);
+    if(ehMeu){ if(fez)st.meu++; st.nMeu++; bola("pen-meu",fez); $("#pen-casa").textContent=st.meu; }
+    else { if(fez)st.adv++; st.nAdv++; bola("pen-adv",fez); $("#pen-fora").textContent=st.adv; }
+    st.vez=ehMeu?"adv":"meu";
+    const dec=decidido();
+    if(dec){ s.penaltis=dec; s.penPlacar=st.meu+"x"+st.adv; setTimeout(onDone, ms||300); return; }
+    setTimeout(chutar, ms);
+  }
+  setTimeout(chutar, ms||300);
+}
 function fimDePartida(){
+  const s=estado.sim;
+  if(s.precisaPen && !s.penFeito){
+    dispararPenaltis(()=>{ s.penFeito=true; resolverFim(); });
+    return;
+  }
+  resolverFim();
+}
+function resolverFim(){
   const s=estado.sim, c=estado.campanha;
-  // decisão por pênaltis no mata-mata empatado
   let detalhe="";
   if(s.penaltis){
     const div=document.createElement("div");
     div.className="ev";
     const vMeu = s.penaltis==="meu";
-    div.innerHTML=`<span class="min">PÊN</span> <b>Pênaltis:</b> ${vMeu?"Inter avança":s.adv.nome+" avança"}`;
+    div.innerHTML=`<span class="min">PÊN</span> <b>Pênaltis (${s.penPlacar}):</b> ${vMeu?"Inter avança":s.adv.nome+" avança"}`;
     $("#jogo-eventos").appendChild(div);
-    detalhe=" (pên)";
+    detalhe=" (pên "+s.penPlacar+")";
   }
   // registra
   const venceuMata = s.penaltis ? s.penaltis==="meu" : s.gMeu>s.gAdv;
   c.historico.push({fase:s.fase.nome, adv:s.adv, gMeu:s.gMeu, gAdv:s.gAdv, detalhe});
   if(s.fase.tipo==="grupo"){
-    c.pontos += s.gMeu>s.gAdv?3:(s.gMeu===s.gAdv?1:0);
+    const g=c.grupo[c.faseIdx];
+    c.interGrupo.pts += s.gMeu>s.gAdv?3:(s.gMeu===s.gAdv?1:0);
+    c.interGrupo.sg  += s.gMeu-s.gAdv;
+    g.pts += s.gAdv>s.gMeu?3:(s.gMeu===s.gAdv?1:0);
+    g.sg  += s.gAdv-s.gMeu;
+    c.pontos = c.interGrupo.pts;
   }
   // botão próximo
   const bt=$("#btn-prox-jogo"); bt.classList.remove("hide");
-  // define avanço
+  // fim da fase de grupos: completa a tabela e classifica os 2 primeiros
   if(s.fase.tipo==="grupo" && c.faseIdx===2){
-    if(c.pontos<4){ c.eliminado=true; bt.textContent="Ver resultado ➜";
+    // jogos entre os outros 3 do grupo
+    [[0,1],[0,2],[1,2]].forEach(([i,j])=>{
+      const A=c.grupo[i], B=c.grupo[j];
+      const [ga,gb]=gerarPlacarNeutro(A.clube.forca, B.clube.forca);
+      A.sg+=ga-gb; B.sg+=gb-ga;
+      if(ga>gb) A.pts+=3; else if(gb>ga) B.pts+=3; else { A.pts++; B.pts++; }
+    });
+    const tabela=[{nome:"Internacional", pts:c.interGrupo.pts, sg:c.interGrupo.sg, inter:true},
+      ...c.grupo.map(g=>({nome:g.clube.nome, pts:g.pts, sg:g.sg, inter:false}))];
+    tabela.sort((a,b)=> b.pts-a.pts || b.sg-a.sg);
+    const pos=tabela.findIndex(t=>t.inter)+1;
+    c.grupoPos=pos;
+    renderTabelaGrupo(tabela);
+    if(pos>2){ c.eliminado=true; bt.textContent="Ver resultado ➜";
       bt.onclick=finalizarCampanha; return; }
   }
   if(s.fase.tipo==="mata" && !venceuMata){
@@ -1422,7 +1512,10 @@ function finalizarCampanha(){
     msg.style.color="var(--dourado)";
   }else if(c.eliminado){
     const ult=c.historico[c.historico.length-1];
-    msg.innerHTML=`Eliminado na fase <b>${ult.fase}</b>.<br><span style='font-size:1rem;opacity:.7'>Monte um elenco mais forte!</span>`;
+    const ondeSaiu = (c.grupoPos && c.grupoPos>2)
+      ? `na <b>fase de grupos</b> (${c.grupoPos}º lugar)`
+      : `nas <b>${ult.fase}</b>`;
+    msg.innerHTML=`Eliminado ${ondeSaiu}.<br><span style='font-size:1rem;opacity:.7'>Monte um elenco mais forte!</span>`;
     msg.style.color="var(--vermelho-claro)";
   }else{
     msg.innerHTML="Campanha encerrada.";
