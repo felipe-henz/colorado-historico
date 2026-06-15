@@ -7,36 +7,54 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
   :root{
-    --vermelho:#C8102E;
-    --vermelho-esc:#8E0B20;
-    --vermelho-claro:#E5394E;
+    --vermelho:#E30613;
+    --vermelho-esc:#A50812;
+    --vermelho-claro:#FF4452;
     --branco:#ffffff;
-    --escuro:#14060a;
-    --cinza:#2a1116;
+    --escuro:#0d0406;
+    --cinza:#1c0c10;
     --dourado:#F2C14E;
-    --verde:#2ecc71;
-    --txt:#fbeef0;
+    --verde:#1f9d52;
+    --txt:#fff3f4;
   }
-  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0;
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif}
   body{
-    background:radial-gradient(circle at 50% -10%, #3a0a14 0%, #14060a 55%, #0a0407 100%);
-    color:var(--txt);min-height:100vh;padding:20px;
+    background:
+      radial-gradient(circle at 50% -5%, rgba(227,6,19,.45) 0%, rgba(227,6,19,0) 45%),
+      linear-gradient(180deg, #1a0508 0%, #0d0406 60%, #070304 100%);
+    background-attachment:fixed;
+    color:var(--txt);min-height:100vh;padding:20px 18px 40px;
   }
   .wrap{max-width:920px;margin:0 auto}
-  header.topo{text-align:center;padding:18px 0 8px}
-  header.topo h1{
-    font-size:2.4rem;letter-spacing:1px;
-    text-shadow:0 2px 0 var(--vermelho-esc);
+  /* cabeçalho com escudo */
+  header.topo{display:flex;flex-direction:column;align-items:center;
+    text-align:center;padding:14px 0 6px}
+  .escudo{width:74px;height:74px;filter:drop-shadow(0 6px 14px rgba(227,6,19,.5));margin-bottom:8px}
+  header.topo .marca-nome{
+    font-size:2rem;font-weight:800;letter-spacing:3px;line-height:1;
+    color:#fff;text-shadow:0 2px 0 var(--vermelho-esc);
   }
-  header.topo h1 b{color:var(--vermelho)}
-  header.topo p{opacity:.7;font-size:.95rem;margin-top:4px}
+  header.topo .marca-sub{
+    font-size:.82rem;letter-spacing:2px;text-transform:uppercase;
+    color:var(--vermelho-claro);font-weight:700;margin-top:7px;
+  }
+  header.topo .marca-desc{opacity:.6;font-size:.85rem;margin-top:6px;max-width:480px}
+  .barra-cores{display:flex;height:4px;width:120px;margin:12px auto 0;border-radius:4px;overflow:hidden}
+  .barra-cores i{flex:1}
+  .barra-cores i:nth-child(odd){background:var(--vermelho)}
+  .barra-cores i:nth-child(even){background:#fff}
   .card{
-    background:linear-gradient(160deg, rgba(200,16,46,.12), rgba(0,0,0,.25));
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:18px;padding:22px;margin-top:18px;
-    box-shadow:0 18px 40px rgba(0,0,0,.4);
+    background:linear-gradient(160deg, rgba(227,6,19,.10), rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:16px;padding:22px;margin-top:18px;
+    box-shadow:0 18px 40px rgba(0,0,0,.45);
+    backdrop-filter:blur(2px);
   }
-  h2{font-size:1.3rem;margin-bottom:12px;color:var(--dourado)}
+  h2{font-size:1.25rem;margin-bottom:12px;color:#fff;
+    display:flex;align-items:center;gap:8px}
+  h2::before{content:"";width:5px;height:1.1em;border-radius:3px;
+    background:var(--vermelho);box-shadow:0 0 8px rgba(227,6,19,.7)}
   .label{font-size:.8rem;text-transform:uppercase;letter-spacing:1px;opacity:.65;margin:14px 0 6px}
   .opcoes{display:flex;flex-wrap:wrap;gap:10px}
   .chip{
@@ -151,6 +169,13 @@
   .placar-grande{font-size:2.6rem;font-weight:800;display:flex;align-items:center;gap:10px}
   .placar-grande i{font-size:1.2rem;opacity:.5;font-style:normal}
   .placar-grande span{min-width:38px;text-align:center}
+  .chance-wrap{margin:14px 0 4px}
+  .chance-barra{display:flex;height:14px;border-radius:8px;overflow:hidden;
+    border:1px solid rgba(255,255,255,.15)}
+  .chance-barra i{background:linear-gradient(90deg,var(--vermelho),var(--vermelho-claro));transition:.3s}
+  .chance-barra b{background:rgba(255,255,255,.18);transition:.3s}
+  .chance-txt{text-align:center;font-size:.85rem;opacity:.85;margin-top:5px}
+  .chance-txt span{font-weight:800;color:var(--dourado)}
   .relogio-wrap{margin:16px 0 6px}
   .relogio{text-align:center;font-size:1.1rem;font-weight:700;color:var(--verde)}
   .barra-tempo{height:6px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden;margin-top:6px}
@@ -208,8 +233,18 @@
 <body>
 <div class="wrap">
   <header class="topo">
-    <h1>COLORADO <b>HISTÓRICO</b></h1>
-    <p>Sorteie times da história do Internacional e monte o XI dos sonhos</p>
+    <svg class="escudo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-label="Escudo">
+      <circle cx="50" cy="50" r="48" fill="#fff"/>
+      <circle cx="50" cy="50" r="44" fill="#E30613"/>
+      <circle cx="50" cy="50" r="30" fill="none" stroke="#fff" stroke-width="3"/>
+      <path d="M50 8 L54 18 L64 18 L56 24 L59 34 L50 28 L41 34 L44 24 L36 18 L46 18 Z" fill="#fff"/>
+      <text x="50" y="60" text-anchor="middle" font-size="22" font-weight="900"
+        fill="#fff" font-family="Segoe UI, sans-serif" letter-spacing="1">SCI</text>
+    </svg>
+    <div class="marca-nome">INTERNACIONAL</div>
+    <div class="marca-sub">Colorado Histórico</div>
+    <p class="marca-desc">Sorteie times da história do Inter, monte o XI dos sonhos e dispute a Libertadores</p>
+    <div class="barra-cores"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   </header>
 
   <!-- TELA 1: CONFIGURAÇÃO -->
@@ -272,6 +307,12 @@
         <div class="time-forca" id="jogo-forca-fora"></div>
       </div>
     </div>
+    <div class="chance-wrap">
+      <div class="chance-barra">
+        <i id="chance-meu" style="width:50%"></i><b id="chance-adv" style="width:50%"></b>
+      </div>
+      <div class="chance-txt">Chance de vitória: <span id="jogo-chance">—</span></div>
+    </div>
     <div class="relogio-wrap">
       <div class="relogio"><span id="jogo-min">0</span>'</div>
       <div class="barra-tempo"><i id="tempo-fill" style="width:0%"></i></div>
@@ -317,7 +358,7 @@
    MEI meia-armador · PD ponta-direita · PE ponta-esquerda · CA centroavante */
 const TIMES = [
   { nome:"1975 / 1976", ano:"Bicampeão Brasileiro", jogadores:[
-    {nome:"Manga", pos:["GOL"], forca:87},
+    {nome:"Manga", pos:["GOL"], forca:89},
     {nome:"Gilmar", pos:["GOL"], forca:74},
     {nome:"Valdomiro", pos:["PD","MD"], forca:85},
     {nome:"Vacaria", pos:["LE","ZAG"], forca:75},
@@ -340,8 +381,8 @@ const TIMES = [
   ]},
   { nome:"1979", ano:"Tricampeão Invicto", jogadores:[
     {nome:"Benítez", pos:["GOL"], forca:80},
-    {nome:"Manga", pos:["GOL"], forca:83},
-    {nome:"Mauro Galvão", pos:["ZAG","VOL"], forca:83},
+    {nome:"Manga", pos:["GOL"], forca:85},
+    {nome:"Mauro Galvão", pos:["ZAG","VOL"], forca:85},
     {nome:"João Carlos", pos:["ZAG"], forca:78},
     {nome:"Tovar", pos:["ZAG"], forca:77},
     {nome:"Bira", pos:["LE","LD"], forca:77},
@@ -357,10 +398,11 @@ const TIMES = [
     {nome:"Bóris", pos:["CA","PD"], forca:77},
     {nome:"Cláudio Mineiro", pos:["PE","PD"], forca:76},
   ]},
-  { nome:"1985 — 1994", ano:"Geração de ouro", jogadores:[
-    {nome:"Taffarel", pos:["GOL"], forca:86},
+  { nome:"1985 — 1997", ano:"Geração de ouro", jogadores:[
+    {nome:"Taffarel", pos:["GOL"], forca:88},
     {nome:"Gilmar Rinaldi", pos:["GOL"], forca:81},
     {nome:"Roberto Gaúcho", pos:["GOL"], forca:77},
+    {nome:"Gamarra", pos:["ZAG"], forca:86},
     {nome:"Wilson Gottardo", pos:["ZAG"], forca:79},
     {nome:"Índio (zagueiro)", pos:["ZAG"], forca:78},
     {nome:"Balalo", pos:["ZAG","LD"], forca:75},
@@ -375,11 +417,11 @@ const TIMES = [
     {nome:"Marquinhos Santos", pos:["MEI","MC"], forca:74},
   ]},
   { nome:"2006", ano:"Campeão do Mundo", jogadores:[
-    {nome:"Clemer", pos:["GOL"], forca:82},
+    {nome:"Clemer", pos:["GOL"], forca:84},
     {nome:"Lauro", pos:["GOL"], forca:77},
     {nome:"Ceará", pos:["LD"], forca:80},
     {nome:"Wellington Monteiro", pos:["LE"], forca:76},
-    {nome:"Índio", pos:["ZAG"], forca:86},
+    {nome:"Índio", pos:["ZAG"], forca:88},
     {nome:"Fabiano Eller", pos:["ZAG"], forca:79},
     {nome:"Wilson Goiano", pos:["ZAG"], forca:74},
     {nome:"Tinga", pos:["VOL","MC","LD"], forca:83},
@@ -398,8 +440,8 @@ const TIMES = [
   { nome:"2008", ano:"Campeão da Sul-Americana", jogadores:[
     {nome:"Lauro", pos:["GOL"], forca:78},
     {nome:"Renan", pos:["GOL"], forca:79},
-    {nome:"Bolívar", pos:["ZAG"], forca:82},
-    {nome:"Índio", pos:["ZAG"], forca:85},
+    {nome:"Bolívar", pos:["ZAG"], forca:84},
+    {nome:"Índio", pos:["ZAG"], forca:87},
     {nome:"Danny Morais", pos:["ZAG"], forca:76},
     {nome:"Kléber", pos:["LE","CA"], forca:79},
     {nome:"Nei", pos:["LD"], forca:76},
@@ -419,8 +461,8 @@ const TIMES = [
     {nome:"Lacerda", pos:["GOL"], forca:78},
     {nome:"Nei", pos:["LD"], forca:76},
     {nome:"Kléber", pos:["LE","CA"], forca:82},
-    {nome:"Bolívar", pos:["ZAG"], forca:83},
-    {nome:"Índio", pos:["ZAG"], forca:85},
+    {nome:"Bolívar", pos:["ZAG"], forca:85},
+    {nome:"Índio", pos:["ZAG"], forca:87},
     {nome:"Sorondo", pos:["ZAG"], forca:79},
     {nome:"Danny Morais", pos:["ZAG"], forca:77},
     {nome:"Guiñazú", pos:["VOL","MC"], forca:84},
@@ -435,7 +477,7 @@ const TIMES = [
     {nome:"Leandro Damião", pos:["CA"], forca:83},
   ]},
   { nome:"2015", ano:"Campeonato Brasileiro", jogadores:[
-    {nome:"Alisson", pos:["GOL"], forca:85},
+    {nome:"Alisson", pos:["GOL"], forca:88},
     {nome:"Muriel", pos:["GOL"], forca:76},
     {nome:"Fabrício", pos:["LD","LE"], forca:75},
     {nome:"Cláudio Winck", pos:["LD"], forca:74},
@@ -458,7 +500,7 @@ const TIMES = [
     {nome:"Eduardo Sasha", pos:["CA","PE"], forca:74},
   ]},
   { nome:"2016", ano:"Campeonato Brasileiro", jogadores:[
-    {nome:"Alisson", pos:["GOL"], forca:85},
+    {nome:"Alisson", pos:["GOL"], forca:88},
     {nome:"Danilo Fernandes", pos:["GOL"], forca:76},
     {nome:"Cláudio Winck", pos:["LD"], forca:74},
     {nome:"William", pos:["LD","ZAG"], forca:73},
@@ -503,7 +545,7 @@ const TIMES = [
     {nome:"Thiago Galhardo", pos:["MEI","CA"], forca:80},
   ]},
   { nome:"2024 / 2025", ano:"Era Roger Machado", jogadores:[
-    {nome:"Rochet", pos:["GOL"], forca:83},
+    {nome:"Rochet", pos:["GOL"], forca:85},
     {nome:"Anthoni", pos:["GOL"], forca:75},
     {nome:"Bustos", pos:["LD"], forca:78},
     {nome:"Wesley", pos:["PD","LD"], forca:77},
@@ -528,8 +570,8 @@ const TIMES = [
     {nome:"Renan", pos:["GOL"], forca:80},
     {nome:"Lauro", pos:["GOL"], forca:77},
     {nome:"Nei", pos:["LD"], forca:76},
-    {nome:"Bolívar", pos:["ZAG"], forca:82},
-    {nome:"Índio", pos:["ZAG"], forca:85},
+    {nome:"Bolívar", pos:["ZAG"], forca:84},
+    {nome:"Índio", pos:["ZAG"], forca:87},
     {nome:"Danny Morais", pos:["ZAG"], forca:77},
     {nome:"Kléber", pos:["LE","CA"], forca:81},
     {nome:"Sandro", pos:["VOL"], forca:78},
@@ -576,11 +618,12 @@ const TIMES = [
     {nome:"Vilalba", pos:["CA"], forca:82},
     {nome:"Carlitos", pos:["CA"], forca:92},
     {nome:"Adãozinho", pos:["CA","MEI"], forca:86},
+    {nome:"Oreco", pos:["LE","LD"], forca:84},
   ]},
   { nome:"1992", ano:"Campeão da Copa do Brasil", jogadores:[
     {nome:"Gato Fernández", pos:["GOL"], forca:82},
     {nome:"Célio Lino", pos:["LD"], forca:78},
-    {nome:"Célio Silva", pos:["ZAG"], forca:81},
+    {nome:"Célio Silva", pos:["ZAG"], forca:83},
     {nome:"Pinga", pos:["ZAG"], forca:77},
     {nome:"Daniel Franco", pos:["LE"], forca:77},
     {nome:"Ricardo Costa", pos:["VOL"], forca:78},
@@ -598,8 +641,8 @@ const TIMES = [
     {nome:"Lacerda", pos:["GOL"], forca:77},
     {nome:"Nei", pos:["LD"], forca:77},
     {nome:"Kléber", pos:["LE","CA"], forca:82},
-    {nome:"Bolívar", pos:["ZAG"], forca:83},
-    {nome:"Índio", pos:["ZAG"], forca:84},
+    {nome:"Bolívar", pos:["ZAG"], forca:85},
+    {nome:"Índio", pos:["ZAG"], forca:86},
     {nome:"Sorondo", pos:["ZAG"], forca:78},
     {nome:"Guiñazú", pos:["VOL","MC"], forca:84},
     {nome:"Elton", pos:["VOL"], forca:77},
@@ -611,6 +654,86 @@ const TIMES = [
     {nome:"Dellatorre", pos:["CA"], forca:74},
     {nome:"Leandro Damião", pos:["CA"], forca:85},
     {nome:"Jô", pos:["CA"], forca:79},
+  ]},
+  { nome:"2004", ano:"Tetracampeão Gaúcho", jogadores:[
+    {nome:"Clemer", pos:["GOL"], forca:83},
+    {nome:"Ceará", pos:["LD"], forca:79},
+    {nome:"Wellington Monteiro", pos:["LE"], forca:75},
+    {nome:"Índio", pos:["ZAG"], forca:85},
+    {nome:"Fabiano Eller", pos:["ZAG"], forca:78},
+    {nome:"Tinga", pos:["VOL","MC","LD"], forca:82},
+    {nome:"Perdigão", pos:["VOL"], forca:75},
+    {nome:"Jadílson", pos:["VOL","MC"], forca:74},
+    {nome:"Alex", pos:["MEI","MC"], forca:80},
+    {nome:"Rafael Sóbis", pos:["CA","MEI"], forca:82},
+    {nome:"Fernandão", pos:["CA","MEI"], forca:87},
+    {nome:"Nilmar", pos:["CA","PE"], forca:83},
+    {nome:"Diego Souza", pos:["MEI","CA"], forca:78},
+  ]},
+  { nome:"2014", ano:"Vice do Gauchão e Brasileirão forte", jogadores:[
+    {nome:"Alisson", pos:["GOL"], forca:87},
+    {nome:"Muriel", pos:["GOL"], forca:76},
+    {nome:"Alan Ruschel", pos:["LE"], forca:74},
+    {nome:"Wellington Silva", pos:["LD","ZAG"], forca:75},
+    {nome:"Alan Costa", pos:["ZAG"], forca:75},
+    {nome:"Ernando", pos:["ZAG","VOL"], forca:76},
+    {nome:"Juan", pos:["ZAG"], forca:80},
+    {nome:"Willians", pos:["VOL","MC"], forca:78},
+    {nome:"Aránguiz", pos:["VOL","MC"], forca:82},
+    {nome:"Alan Patrick", pos:["MEI","MC"], forca:80},
+    {nome:"D'Alessandro", pos:["MEI","MC","PE"], forca:85},
+    {nome:"Alex", pos:["MEI","MC"], forca:78},
+    {nome:"Valdívia", pos:["MEI","MC"], forca:76},
+    {nome:"Nilmar", pos:["CA","PE"], forca:81},
+    {nome:"Rafael Moura", pos:["CA"], forca:78},
+  ]},
+  { nome:"2017", ano:"Acesso à Série A", jogadores:[
+    {nome:"Danilo Fernandes", pos:["GOL"], forca:78},
+    {nome:"Cláudio Winck", pos:["LD"], forca:75},
+    {nome:"Léo Ortiz", pos:["ZAG"], forca:78},
+    {nome:"Klaus", pos:["ZAG"], forca:75},
+    {nome:"Cuesta", pos:["ZAG"], forca:78},
+    {nome:"Uendel", pos:["LE"], forca:76},
+    {nome:"Charles", pos:["VOL"], forca:76},
+    {nome:"Rodrigo Dourado", pos:["VOL"], forca:77},
+    {nome:"Edenílson", pos:["VOL","MC"], forca:80},
+    {nome:"D'Alessandro", pos:["MEI","MC","PE"], forca:83},
+    {nome:"Nico López", pos:["PE","CA","MEI"], forca:78},
+    {nome:"William Pottker", pos:["CA"], forca:77},
+    {nome:"Carlos", pos:["CA"], forca:74},
+  ]},
+  { nome:"2007", ano:"Tríplice Coroa (Recopa)", jogadores:[
+    {nome:"Clemer", pos:["GOL"], forca:83},
+    {nome:"Lauro", pos:["GOL"], forca:77},
+    {nome:"Ceará", pos:["LD"], forca:80},
+    {nome:"Wellington Monteiro", pos:["LE"], forca:76},
+    {nome:"Índio", pos:["ZAG"], forca:87},
+    {nome:"Hugo", pos:["ZAG"], forca:77},
+    {nome:"Tinga", pos:["VOL","MC","LD"], forca:83},
+    {nome:"Edinho", pos:["VOL"], forca:78},
+    {nome:"Guiñazú", pos:["VOL","MC"], forca:83},
+    {nome:"Alex", pos:["MEI","MC"], forca:80},
+    {nome:"Iarley", pos:["MEI","MC"], forca:80},
+    {nome:"Alexandre Pato", pos:["CA","MEI"], forca:82},
+    {nome:"Rafael Sóbis", pos:["CA","MEI"], forca:84},
+    {nome:"Fernandão", pos:["CA","MEI"], forca:88},
+    {nome:"Adriano Gabiru", pos:["CA","PD"], forca:77},
+  ]},
+  { nome:"2020", ano:"Vice-campeão Brasileiro", jogadores:[
+    {nome:"Marcelo Lomba", pos:["GOL"], forca:79},
+    {nome:"Saravia", pos:["LD"], forca:77},
+    {nome:"Heitor", pos:["LD"], forca:74},
+    {nome:"Uendel", pos:["LE"], forca:75},
+    {nome:"Rodrigo Moledo", pos:["ZAG"], forca:79},
+    {nome:"Cuesta", pos:["ZAG"], forca:79},
+    {nome:"Edenílson", pos:["VOL","MC"], forca:81},
+    {nome:"Rodrigo Lindoso", pos:["VOL","MC"], forca:77},
+    {nome:"Patrick", pos:["MEI","MC"], forca:80},
+    {nome:"D'Alessandro", pos:["MEI","MC","PE"], forca:83},
+    {nome:"Praxedes", pos:["MEI","MC"], forca:74},
+    {nome:"Thiago Galhardo", pos:["MEI","CA"], forca:82},
+    {nome:"Abel Hernández", pos:["CA"], forca:80},
+    {nome:"Yuri Alberto", pos:["CA"], forca:78},
   ]},
 ];
 
@@ -689,6 +812,82 @@ const CLUBES = [
   {nome:"Once Caldas 2004", pais:"COL", forca:80, estrelas:["Dinas","Henao"]},
   // EQUADOR
   {nome:"LDU Quito 2008", pais:"EQU", forca:82, estrelas:["Bieler","Manso","Urrutia"]},
+  {nome:"Barcelona SC 1990", pais:"EQU", forca:80, estrelas:["Trobbiani","Muñoz"]},
+  {nome:"Independiente del Valle 2016", pais:"EQU", forca:80, estrelas:["Sornoza","Cabezas"]},
+  // BRASIL (mais épocas)
+  {nome:"Vasco 2000", pais:"BRA", forca:86, estrelas:["Romário","Edmundo","Juninho Pernambucano"]},
+  {nome:"Flamengo 2022", pais:"BRA", forca:88, estrelas:["Arrascaeta","Pedro","Gabigol"]},
+  {nome:"Grêmio 1995", pais:"BRA", forca:86, estrelas:["Jardel","Paulo Nunes","Arce"]},
+  {nome:"Palmeiras 2020", pais:"BRA", forca:86, estrelas:["Rony","Luiz Adriano","Gustavo Gómez"]},
+  {nome:"Corinthians 2000", pais:"BRA", forca:85, estrelas:["Marcelinho Carioca","Edílson","Vampeta"]},
+  {nome:"Vasco 1998", pais:"BRA", forca:85, estrelas:["Edmundo","Juninho Pernambucano","Donizete"]},
+  {nome:"Fluminense 2023", pais:"BRA", forca:85, estrelas:["Cano","Ganso","Marcelo"]},
+  {nome:"Botafogo 2024", pais:"BRA", forca:85, estrelas:["Luiz Henrique","Almada","Savarino"]},
+  {nome:"Cruzeiro 2003", pais:"BRA", forca:84, estrelas:["Alex","Aristizábal","Sorín"]},
+  {nome:"Cruzeiro 1976", pais:"BRA", forca:84, estrelas:["Nelinho","Palhinha","Joãozinho"]},
+  {nome:"Athletico-PR 2019", pais:"BRA", forca:82, estrelas:["Bruno Guimarães","Nikão","Thiago Heleno"]},
+  {nome:"São Paulo 1974", pais:"BRA", forca:82, estrelas:["Pedro Rocha","Mirandinha","Rogério"]},
+  // ARGENTINA (mais épocas)
+  {nome:"River Plate 1996", pais:"ARG", forca:88, estrelas:["Crespo","Francescoli","Ortega"]},
+  {nome:"Boca Juniors 2003", pais:"ARG", forca:86, estrelas:["Tevez","Schiavi","Abbondanzieri"]},
+  {nome:"Boca Juniors 1978", pais:"ARG", forca:86, estrelas:["Gatti","Mastrángelo"]},
+  {nome:"Boca Juniors 2018", pais:"ARG", forca:85, estrelas:["Benedetto","Pavón","Tevez"]},
+  {nome:"River Plate 2015", pais:"ARG", forca:85, estrelas:["Sánchez","Pisculichi","Barovero"]},
+  {nome:"Racing 1967", pais:"ARG", forca:84, estrelas:["Cárdenas","Perfumo","Basile"]},
+  {nome:"Estudiantes 1970", pais:"ARG", forca:84, estrelas:["Verón","Bilardo"]},
+  {nome:"San Lorenzo 2014", pais:"ARG", forca:83, estrelas:["Ortigoza","Correa","Mauro Matos"]},
+  // URUGUAI (mais épocas)
+  {nome:"Nacional 1980", pais:"URU", forca:84, estrelas:["Victorino","De León"]},
+  {nome:"Peñarol 1987", pais:"URU", forca:83, estrelas:["Aguirre","Perdomo"]},
+  {nome:"Peñarol 2011", pais:"URU", forca:81, estrelas:["Pacheco","Martinuccio"]},
+  // PARAGUAI (mais épocas)
+  {nome:"Olimpia 1979", pais:"PAR", forca:84, estrelas:["Aquino","Piazza"]},
+  {nome:"Olimpia 1990", pais:"PAR", forca:83, estrelas:["Amarilla","Samaniego"]},
+  {nome:"Libertad 2006", pais:"PAR", forca:80, estrelas:["Cardozo","Bareiro"]},
+  // CHILE (mais épocas)
+  {nome:"Universidad de Chile 2011", pais:"CHI", forca:82, estrelas:["Eduardo Vargas","Aránguiz"]},
+  {nome:"Colo-Colo 1973", pais:"CHI", forca:82, estrelas:["Caszely","Valdés"]},
+  {nome:"Cobreloa 1982", pais:"CHI", forca:80, estrelas:["Letelier","Soto"]},
+  // COLÔMBIA (mais épocas)
+  {nome:"Millonarios 1949", pais:"COL", forca:86, estrelas:["Di Stéfano","Pedernera","Rossi"]},
+  {nome:"Atlético Nacional 2016", pais:"COL", forca:84, estrelas:["Borja","Berrío"]},
+  {nome:"América de Cali 1996", pais:"COL", forca:83, estrelas:["Antony de Ávila","Jersson González"]},
+  {nome:"Deportivo Cali 1999", pais:"COL", forca:80, estrelas:["Candelo","Zapata"]},
+  // PERU
+  {nome:"Universitario 1972", pais:"PER", forca:80, estrelas:["Cubillas","Chumpitaz"]},
+  {nome:"Alianza Lima 1978", pais:"PER", forca:79, estrelas:["Cubillas","Cueto"]},
+  {nome:"Sporting Cristal 1997", pais:"PER", forca:79, estrelas:["Palacios","Jorge Soto"]},
+  {nome:"Cienciano 2003", pais:"PER", forca:79, estrelas:["Ibarra","Carty"]},
+  // BOLÍVIA
+  {nome:"Bolívar 2014", pais:"BOL", forca:78, estrelas:["Juan Carlos Arce","Ferreira"]},
+  {nome:"The Strongest 2017", pais:"BOL", forca:77, estrelas:["Rolando Blackburn","Triverio"]},
+  // BRASIL (mais)
+  {nome:"Palmeiras 1993", pais:"BRA", forca:87, estrelas:["Edmundo","Evair","Roberto Carlos"]},
+  {nome:"Atlético-MG 2021", pais:"BRA", forca:86, estrelas:["Hulk","Diego Costa","Nacho"]},
+  {nome:"Cruzeiro 2014", pais:"BRA", forca:85, estrelas:["Ricardo Goulart","Everton Ribeiro","Fábio"]},
+  {nome:"São Paulo 2008", pais:"BRA", forca:84, estrelas:["Rogério Ceni","Hernanes","Dagoberto"]},
+  {nome:"Flamengo 2009", pais:"BRA", forca:84, estrelas:["Adriano","Petković","Léo Moura"]},
+  {nome:"Fluminense 2012", pais:"BRA", forca:84, estrelas:["Deco","Fred","Thiago Neves"]},
+  {nome:"Vasco 1989", pais:"BRA", forca:84, estrelas:["Romário","Geovani"]},
+  {nome:"Botafogo 1995", pais:"BRA", forca:82, estrelas:["Túlio","Gonçalves"]},
+  {nome:"Grêmio 2007", pais:"BRA", forca:82, estrelas:["Lucas Leiva","Tcheco"]},
+  // ARGENTINA (mais)
+  {nome:"Independiente 1973", pais:"ARG", forca:85, estrelas:["Bochini","Bertoni"]},
+  {nome:"Estudiantes 1968", pais:"ARG", forca:84, estrelas:["Verón","Bilardo"]},
+  {nome:"Argentinos Juniors 1985", pais:"ARG", forca:83, estrelas:["Borghi","Comas"]},
+  {nome:"Newell's 1992", pais:"ARG", forca:83, estrelas:["Berizzo","Martino"]},
+  {nome:"Lanús 2013", pais:"ARG", forca:80, estrelas:["Sand","Silva"]},
+  // URUGUAI (mais)
+  {nome:"Peñarol 1982", pais:"URU", forca:84, estrelas:["Fernando Morena","Ramos"]},
+  // CHILE (mais)
+  {nome:"Colo-Colo 2006", pais:"CHI", forca:82, estrelas:["Matías Fernández","Suazo"]},
+  {nome:"Universidad Católica 1993", pais:"CHI", forca:80, estrelas:["Almada","Lunari"]},
+  // EQUADOR (mais)
+  {nome:"Independiente del Valle 2022", pais:"EQU", forca:80, estrelas:["Lautaro Díaz","Sornoza"]},
+  // MÉXICO (jogaram a Libertadores)
+  {nome:"Cruz Azul 2001", pais:"MEX", forca:83, estrelas:["Palencia","Óscar Pérez"]},
+  {nome:"Chivas 2010", pais:"MEX", forca:82, estrelas:["Bravo","Reynoso"]},
+  {nome:"Club América 2016", pais:"MEX", forca:82, estrelas:["Oribe Peralta","Sambueza"]},
 ];
 const FASES = [
   {tipo:"grupo", nome:"Fase de Grupos — 1ª rodada"},
@@ -1002,12 +1201,25 @@ const VELOCIDADES=[
   {nome:"Instantâneo", ms:0},
 ];
 
+// fator casa / raça colorada: dá um empurrão ao Inter
+function forcaEfetiva(minha){ return minha + 3; }
 function gerarPlacar(minha,dele){
-  const diff=(minha-dele)/8;
   const p=POSTURAS[estado.postura];
+  const diff=(forcaEfetiva(minha)-dele)/9;   // peso da diferença de força
   const golsMeu=Math.max(0,Math.round(1.4+diff+p.atk+ (Math.random()*2-1)));
   const golsDel=Math.max(0,Math.round(1.4-diff+p.sofridos+ (Math.random()*2-1)));
   return [golsMeu,golsDel];
+}
+// estima a chance de vitória por simulação (mesma lógica do jogo)
+function chanceVitoria(minha,dele){
+  let v=0,e=0; const N=4000;
+  for(let i=0;i<N;i++){
+    const [a,b]=gerarPlacar(minha,dele);
+    if(a>b) v++; else if(a===b) e++;
+  }
+  // empate no mata-mata decide no pênalti (ponderado pela força)
+  const penMeu = forcaEfetiva(minha)/(forcaEfetiva(minha)+dele);
+  return (v + e*penMeu)/N;
 }
 // artilheiro do Inter ponderado por posição ofensiva
 function escolherArtilheiro(){
@@ -1037,7 +1249,7 @@ function jogarProximaFase(){
   let [gMeu,gAdv]=gerarPlacar(c.minha, adv.forca);
   let penaltis=null;
   if(fase.tipo==="mata" && gMeu===gAdv){
-    const venceuPen = Math.random() < c.minha/(c.minha+adv.forca);
+    const venceuPen = Math.random() < forcaEfetiva(c.minha)/(forcaEfetiva(c.minha)+adv.forca);
     penaltis = venceuPen ? "meu" : "adv";
   }
   const eventos=[];
@@ -1054,6 +1266,11 @@ function abrirTelaJogo(){
   $("#jogo-fora-nome").textContent=`${s.adv.nome} (${s.adv.pais})`;
   $("#jogo-forca-casa").textContent="força "+Math.round(estado.campanha.minha);
   $("#jogo-forca-fora").textContent="força "+s.adv.forca;
+  const ch=chanceVitoria(estado.campanha.minha, s.adv.forca);
+  const pct=Math.round(ch*100);
+  $("#jogo-chance").textContent=pct+"%";
+  $("#chance-meu").style.width=pct+"%";
+  $("#chance-adv").style.width=(100-pct)+"%";
   $("#g-casa").textContent="0"; $("#g-fora").textContent="0";
   $("#jogo-min").textContent="0"; $("#tempo-fill").style.width="0%";
   $("#jogo-eventos").innerHTML="";
