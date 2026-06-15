@@ -1033,11 +1033,13 @@ function renderJogadores(){
     lista.appendChild(div);
   });
   const bp=$("#btn-pular");
-  bp.classList.remove("hide");
-  bp.disabled=estado.redrawUsado;
-  bp.textContent=estado.redrawUsado
-    ? "Re-sorteio já usado (1x no jogo todo)"
-    : "Não gostou? Sortear outro time (1x no jogo todo)";
+  if(estado.redrawUsado){
+    bp.classList.add("hide");           // já usou o único re-sorteio do campeonato
+  }else{
+    bp.classList.remove("hide");
+    bp.disabled=false;
+    bp.textContent="Não gostou? Sortear outro time (1x no campeonato)";
+  }
 }
 // passo 1: jogador escolhido -> campo para colocar (verde=livre, dourado=trocar)
 function selecionarJogador(j){
