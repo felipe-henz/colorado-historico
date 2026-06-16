@@ -1215,17 +1215,10 @@ const BANDEIRAS={ARG:"🇦🇷",BRA:"🇧🇷",URU:"🇺🇾",PAR:"🇵🇾",CHI
   COL:"🇨🇴",EQU:"🇪🇨",PER:"🇵🇪",BOL:"🇧🇴",MEX:"🇲🇽"};
 function bandeira(pais){ return BANDEIRAS[pais]||"🏳️"; }
 
-// mando de campo: bônus pra quem joga em casa (+3); fora, o adversário leva o bônus; final é neutro
-const BONUS_CASA=2;
-function forcasComMando(minha,dele,mando){
-  if(mando==="casa") return [minha+BONUS_CASA, dele];
-  if(mando==="fora") return [minha, dele+BONUS_CASA];
-  return [minha, dele]; // neutro
-}
-function gerarPlacar(minha,dele,mando){
-  const [m,d]=forcasComMando(minha,dele,mando);
+// placar baseado só na força dos elencos (+ postura)
+function gerarPlacar(minha,dele){
   const p=POSTURAS[estado.postura];
-  const diff=(m-d)/9;   // peso da diferença de força
+  const diff=(minha-dele)/9;   // peso da diferença de força
   const golsMeu=Math.max(0,Math.round(1.4+diff+p.atk+ (Math.random()*2-1)));
   const golsDel=Math.max(0,Math.round(1.4-diff+p.sofridos+ (Math.random()*2-1)));
   return [golsMeu,golsDel];
@@ -1266,32 +1259,15 @@ function jogarProximaFase(){
   if(c.faseIdx>=FASES.length){ finalizarCampanha(); return; }
   const fase=FASES[c.faseIdx];
   const adv=c.advs[c.faseIdx];
-  // mando de campo sorteado a cada jogo (a final é sempre neutra)
-  const mando = (c.faseIdx===FASES.length-1) ? "neutro" : (Math.random()<0.5?"casa":"fora");
-  // pré-gera resultado e eventos
-  let [gMeu,gAdv]=gerarPlacar(c.minha, adv.forca, mando);
+  // pré-gera resultado e gols (só força de elenco)
+  let [gMeu,gAdv]=gerarPlacar(c.minha, adv.forca);
   const precisaPen = (fase.tipo==="mata" && gMeu===gAdv); // empate no mata-mata -> pênaltis
   const eventos=[];
   const minutos=()=>1+Math.floor(Math.random()*89);
   for(let i=0;i<gMeu;i++) eventos.push({min:minutos(),tipo:"gol",lado:"meu",quem:escolherArtilheiro()});
   for(let i=0;i<gAdv;i++) eventos.push({min:minutos(),tipo:"gol",lado:"adv",quem:rand(adv.estrelas||[adv.nome])});
-  // lances de ambiente (sem gol) — deixa a partida viva
-  const advNome=()=>rand(adv.estrelas||[adv.nome]);
-  const lances=[
-    ()=>"🟨 Cartão amarelo no jogo",
-    ()=>"🧤 Defesa difícil do goleiro!",
-    ()=>"🔥 "+escolherArtilheiro()+" assustou o gol",
-    ()=>"⛳ Escanteio perigoso pro Inter",
-    ()=>"🤕 Falta dura no meio-campo",
-    ()=>"⚡ "+advNome()+" arriscou de longe",
-    ()=>"🚩 Impedimento marcado",
-    ()=>"👏 Boa jogada coletiva colorada",
-  ];
-  const nAmb=5+Math.floor(Math.random()*5);
-  for(let i=0;i<nAmb;i++) eventos.push({min:minutos(),tipo:"lance",texto:rand(lances)()});
-  if(mando==="casa") eventos.push({min:minutos(),tipo:"lance",texto:"📣 A torcida empurra o Colorado!"});
   eventos.sort((a,b)=>a.min-b.min);
-  estado.sim={fase,adv,mando,gMeu,gAdv,penaltis:null,precisaPen,penFeito:false,penPlacar:"",
+  estado.sim={fase,adv,gMeu,gAdv,penaltis:null,precisaPen,penFeito:false,penPlacar:"",
     eventos,min:0,pIdx:0,mMeu:0,mAdv:0,timer:null,rodando:false};
   abrirTelaJogo();
 }
@@ -1303,10 +1279,9 @@ function abrirTelaJogo(){
     renderVelocidades();
     mostrar("tela-jogo");
   }
-  const mandoTxt={casa:"🏠 Inter em casa",fora:"✈️ Inter joga fora",neutro:"🏟️ Campo neutro"}[s.mando];
   const card=document.createElement("div"); card.className="jogo-card";
   card.innerHTML=`
-    <div class="jogo-fase">Libertadores • ${s.fase.nome} • ${mandoTxt}</div>
+    <div class="jogo-fase">Libertadores • ${s.fase.nome}</div>
     <div class="placar-wrap">
       <div class="lado"><div class="time-nome">🔴 Internacional</div><div class="time-forca">força ${Math.round(c.minha)}</div></div>
       <div class="placar-grande"><span class="gc">0</span><i>x</i><span class="gf">0</span></div>
@@ -1407,7 +1382,7 @@ function dispararPenaltis(onDone){
   el.penBox.classList.remove("hide");
   el.pc.textContent="0"; el.pf.textContent="0";
   el.pmeu.innerHTML=""; el.padv.innerHTML="";
-  const [m,d]=forcasComMando(estado.campanha.minha, s.adv.forca, s.mando);
+  const m=estado.campanha.minha, d=s.adv.forca;
   const pMeu=Math.min(0.92,Math.max(0.55,0.75+(m-d)/220));
   const pAdv=Math.min(0.92,Math.max(0.55,0.75-(m-d)/220));
   const st={meu:0,adv:0,nMeu:0,nAdv:0,vez:"meu",iMeu:0,iAdv:0};
